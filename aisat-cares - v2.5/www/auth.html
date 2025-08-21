@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<!--
+    Licensed to the Apache Software Foundation (ASF) under one
+    or more contributor license agreements.  See the NOTICE file
+    distributed with this work for additional information
+    regarding copyright ownership.  The ASF licenses this file
+    to you under the Apache License, Version 2.0 (the
+    "License"); you may not use this file except in compliance
+    with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the License is distributed on an
+    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+     KIND, either express or implied.  See the License for the
+    specific language governing permissions and limitations
+    under the License.
+-->
+<html>
+    <head>
+        
+        <meta http-equiv="Content-Security-Policy" content="
+        default-src 'self' data: gap: https://ssl.gstatic.com;
+        script-src 'self' 'unsafe-inline' 'unsafe-eval';
+        style-src 'self' 'unsafe-inline';
+        img-src 'self' data: content:;
+        connect-src 'self' http://*:5057 https://jimboyaczon.pythonanywhere.com;
+        font-src 'self';
+        object-src 'none';
+        media-src *;
+        child-src 'none';
+        frame-src 'none';
+      ">
+      
+        <meta name="format-detection" content="telephone=no">
+        <meta name="msapplication-tap-highlight" content="no">
+        <meta name="viewport" content="initial-scale=1, width=device-width, viewport-fit=cover">
+        <meta name="color-scheme" content="light dark">
+        <link rel="stylesheet" href="css/auth.css">
+        
+        <title>Aisat Login</title>
+        <style>
+            .password-container {
+                position: relative;
+                display: flex;
+                align-items: center;
+                width: 100%;
+            }
+            .password-container input {
+                width: 100%;
+            }
+            .toggle-password {
+                position: absolute;
+                right: 10px;
+                cursor: pointer;
+                width: 20px;
+                height: 20px;
+                background-image: url('img/hide.png');
+                background-size: contain;
+                background-repeat: no-repeat;
+                opacity: 0.8;
+                z-index: 10;
+            }
+            .toggle-password.visible {
+                background-image: url('img/view.png');
+            }
+        </style>
+    </head>
+    <body>  
+        <!-- psword Reset Container -->
+        <div id="reset-container">
+            <div id="reset-content">
+                
+                
+                <!-- Email Input Step -->
+                <div class="popup-content" id="email-container">
+                    <button id="exit-reset-btn" class="exit-btn">✕</button>
+                    <img src="img/lock.png" id="lock-img" alt="Lock" style="margin-top: 20px;">
+                    <h3>Reset Password</h3>
+                    <p>Enter your email address to receive a verification code</p>
+                    <form id="send-code">
+                        <input type="email" id="forgot-password" name="email" placeholder="Email Address" required>
+                        <button type="submit" class="btn">Send Code</button>
+                    </form>
+                </div>
+
+                <!-- Code Verification Step -->
+                <div id="code-container" class="code-content">
+                    <button id="exit-code-btn" class="exit-btn">✕</button>
+                    <h3>Enter Verification Code</h3>
+                    <p>Please enter the 4-digit verification code sent to your email</p>
+                    <div style="display: flex; justify-content: center; margin: 20px 0;">
+                        <input type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="code-input" id="digit1" style="width: 50px; height: 50px; margin: 0 5px; text-align: center; font-size: 24px; background-color: rgba(255, 255, 255, 0.8); border: 1px solid #ccc; border-radius: 8px;">
+                        <input type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="code-input" id="digit2" style="width: 50px; height: 50px; margin: 0 5px; text-align: center; font-size: 24px; background-color: rgba(255, 255, 255, 0.8); border: 1px solid #ccc; border-radius: 8px;">
+                        <input type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="code-input" id="digit3" style="width: 50px; height: 50px; margin: 0 5px; text-align: center; font-size: 24px; background-color: rgba(255, 255, 255, 0.8); border: 1px solid #ccc; border-radius: 8px;">
+                        <input type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="code-input" id="digit4" style="width: 50px; height: 50px; margin: 0 5px; text-align: center; font-size: 24px; background-color: rgba(255, 255, 255, 0.8); border: 1px solid #ccc; border-radius: 8px;">
+                    </div>
+                    <button class="btn" id="continue-reset">Continue</button>
+                    <p>Didn't receive a code? <a href="#" id="resendcode">Resend Code</a></p>
+                </div>
+                
+                <!-- New Password Step -->
+                <div id="resetpass-con" class="resetpass-content">
+                    <button id="exit-resetpass-btn" class="exit-btn">✕</button>
+                    <h3>Create New Password</h3>
+                    <p>Please enter your new password</p>
+                    <div class="password-container">
+                        <input type="password" id="new-password" placeholder="New Password" required>
+                        <span class="toggle-password" data-target="new-password"></span>
+                    </div>
+                    <div class="password-container">
+                        <input type="password" id="confirm-password" placeholder="Confirm Password" required>
+                        <span class="toggle-password" data-target="confirm-password"></span>
+                    </div>
+                    <button class="btn" id="resetbutton">Reset Password</button>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Login Container -->
+        <div>
+            <div id="container" class="form-container">
+                <form id="loginForm">
+                    <input type="text" id="idno" name="idno" placeholder="ID No.:" required>
+                    <div class="password-container">
+                        <input type="password" id="password" name="password" placeholder="Password" required>
+                        <span class="toggle-password" data-target="password"></span>
+                    </div>
+                    <p>Forgot password? <a href="#" id="forgot-link">Reset</a></p>
+                    <button type="submit">Login</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="app">
+            <div class="intro">
+                <img id="logo" src="img/logo.png" alt="AISAT Logo" class="logo" />
+                <img id="aisat" src="img/aisat.png" alt="AISAT" class="aisat" />
+            </div>
+        </div>
+
+
+        <script>
+            // Define baseUrl for API calls globally so it's available to all scripts
+            const baseUrl = "https://jimboyaczon.pythonanywhere.com";
+            
+            // Define cordovaFetch function - a wrapper for fetch that works in both Cordova and browser environments
+            function cordovaFetch(url, options = {}) {
+                return new Promise((resolve, reject) => {
+                    // Check if running in Cordova environment
+                    if (window.cordova && window.cordova.plugin && window.cordova.plugin.http) {
+                        // Convert fetch options to Cordova Advanced HTTP plugin format
+                        const method = (options.method || 'GET').toUpperCase();
+                        const headers = options.headers || {};
+                        const data = options.body ? 
+                            (typeof options.body === 'string' ? JSON.parse(options.body) : options.body) : 
+                            {};
+                        
+                        // Use Cordova's Advanced HTTP plugin
+                        cordova.plugin.http.sendRequest(url, {
+                            method: method,
+                            data: data,
+                            headers: headers,
+                            serializer: 'json'
+                        }, response => {
+                            // Create a fetch-like response object
+                            const fetchResponse = {
+                                ok: response.status >= 200 && response.status < 300,
+                                status: response.status,
+                                headers: response.headers,
+                                json: () => Promise.resolve(JSON.parse(response.data)),
+                                text: () => Promise.resolve(response.data)
+                            };
+                            resolve(fetchResponse);
+                        }, error => {
+                            reject(error);
+                        });
+                    } else {
+                        // Fall back to standard fetch API
+                        fetch(url, options)
+                            .then(resolve)
+                            .catch(reject);
+                    }
+                });
+            }
+
+            // Password toggle functionality
+            document.addEventListener('DOMContentLoaded', function() {
+                const toggleButtons = document.querySelectorAll('.toggle-password');
+                
+                toggleButtons.forEach(button => {
+                    button.addEventListener('click', function() {
+                        const targetId = this.getAttribute('data-target');
+                        const passwordInput = document.getElementById(targetId);
+                        
+                        if (passwordInput.type === 'password') {
+                            passwordInput.type = 'text';
+                            this.classList.add('visible');
+                        } else {
+                            passwordInput.type = 'password';
+                            this.classList.remove('visible');
+                        }
+                    });
+                });
+            });
+        </script>
+        <script src="js/auth.js"></script>
+        <script src="js/login.js"></script>
+        <script src="js/reset.js"></script>
+    </body>
+</html>

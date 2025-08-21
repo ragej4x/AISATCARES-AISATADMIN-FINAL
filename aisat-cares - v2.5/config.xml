@@ -1,0 +1,47 @@
+<?xml version='1.0' encoding='utf-8'?>
+<widget id="com.aczon.myapp" version="1.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:android="http://schemas.android.com/apk/res/android" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+    <name>AISATCares</name>
+    <description>Sample Apache Cordova App</description>
+    <author email="dev@cordova.apache.org" href="https://cordova.apache.org">
+        Apache Cordova Team
+    </author>
+    <content src="index.html" />
+    <access origin="*" />
+    <allow-navigation href="*" />
+    <allow-intent href="http://*/*" />
+    <allow-intent href="https://*/*" />
+    <allow-intent href="https://jimboyaczon.pythonanywhere.com" />
+    <icon src="www/img/logo.png" />
+    <preference name="AndroidPersistentFileLocation" value="Compatibility" />
+    <preference name="DisallowOverscroll" value="true" />
+    <preference name="EnableViewportScale" value="false" />
+    <preference name="ShowSplashScreen" value="true" />
+    <preference name="SplashScreen" value="www/img/logo.png" />
+    <platform name="android">
+        <icon density="ldpi" src="www/img/logo.png" />
+        <icon density="mdpi" src="www/img/logo.png" />
+        <icon density="hdpi" src="www/img/logo.png" />
+        <icon density="xhdpi" src="www/img/logo.png" />
+        <icon density="xxhdpi" src="www/img/logo.png" />
+        <icon density="xxxhdpi" src="www/img/logo.png" />
+        <preference name="AndroidWindowSplashScreenAnimatedIcon" value="www/img/logo.png" />
+        <preference name="SplashScreenDelay" value="3000" />
+        <preference name="AutoHideSplashScreen" value="true" />
+        <preference name="SplashScreenSpinnerColor" value="#1976D2" />
+        <edit-config file="app/src/main/AndroidManifest.xml" mode="merge" target="/manifest/application">
+            <application android:usesCleartextTraffic="true" />
+        </edit-config>
+        <config-file parent="/manifest" target="AndroidManifest.xml">
+            <uses-permission android:name="android.permission.INTERNET" />
+            <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+        </config-file>
+    </platform>
+    <platform name="browser">
+        <icon src="www/img/logo.png" />
+        <splash src="www/img/logo.png" />
+    </platform>
+    <plugin name="cordova-plugin-whitelist" spec="1" />
+    <plugin name="cordova-plugin-network-information" />
+    <preference name="ONESIGNAL_APP_ID" value="31f743ae-2b8b-4043-83f8-04d49ceb147f" />
+    <preference name="ONESIGNAL_GOOGLE_PROJECT_NUMBER" value="REMOTE" />
+</widget>

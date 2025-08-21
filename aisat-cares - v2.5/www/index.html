@@ -1,0 +1,4066 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <meta charset="UTF-8">
+
+    <!--
+    Customize this policy to fit your own app's needs. For more guidance, please refer to the docs:
+        https://cordova.apache.org/docs/en/latest/
+    Some notes:
+        * https://ssl.gstatic.com is required only on Android and is needed for TalkBack to function properly
+        * Disables use of inline scripts in order to mitigate risk of XSS vulnerabilities. To change this:
+            * Enable inline JS: add 'unsafe-inline' to default-src
+    -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' data: gap:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://ssl.gstatic.com https://connect.facebook.net https://jimboyaczon.pythonanywhere.com https://cdnjs.cloudflare.com https://*.onesignal.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; font-src 'self' data: https://cdnjs.cloudflare.com; media-src *; img-src 'self' data: content: https://www.facebook.com blob:; connect-src 'self' https://jimboyaczon.pythonanywhere.com https://*.onesignal.com; frame-src 'self' https://www.facebook.com https://web.facebook.com; object-src 'none';">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="msapplication-tap-highlight" content="no">
+    <meta name="viewport" content="initial-scale=1, width=device-width, viewport-fit=cover">
+    <meta name="color-scheme" content="light dark">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AISAT CARES</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Define baseUrl globally before other scripts -->
+    <script>
+        // Define baseUrl for API calls globally so it's available to all scripts
+        const baseUrl = "https://jimboyaczon.pythonanywhere.com";
+
+
+
+    </script>
+
+
+    <script src="cordova.js"></script>
+    <script src="js/index.js"></script>
+    <script src="js/onesignal-init.js"></script>
+    <script src="js/notification.js" defer></script>
+    <script src="js/settings.js" defer></script>
+    <script src="js/receipt.js" defer></script>
+    <script src="js/tutorial.js" defer></script>
+    
+    <script src="js/announcement.js"></script>
+    <style>
+        :root {
+            --primary-color: #6b9ac4;
+            --primary-light: #97c4e6;
+            --primary-dark: #4a7ba7;
+            --accent-color: #b6dcfe;
+            --wave-color: #8fb8de;
+            --light-bg: #e8f4ff;
+            --white: #ffffff;
+            --text-dark: #2c3e50;
+            --text-muted: #7f8c8d;
+            --success: #66bb6a;
+            --danger: #e57373;
+            --warning: #ffb74d;
+            --info: #4fc3f7;
+            --border-radius: 12px;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--light-bg);
+            color: var(--text-dark);
+            line-height: 1.6;
+            overflow-x: hidden;
+            min-height: 200vh; /* Ensure there's room to scroll */
+        }
+
+        .header-bg {
+            position: fixed;
+            top: 0;
+            right: 0;
+            left: 0;
+            z-index: -1;
+            background-color: var(--wave-color);
+            height: 300px;
+            transition: all 0.5s ease;
+            opacity: 1;
+        }
+        
+        .wave-expanded .header-bg {
+            height: 100vh;
+        }
+        
+        .header-bg.fade-out {
+            opacity: 0;
+        }
+
+        .container {
+           
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            z-index: 2; /* Higher than scroll reveal content */
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 20px 0;
+            position: relative;
+            color: white;
+            padding-top: 40px;
+            padding-bottom: 40px;
+        }
+
+        .header h1.title {
+            color: var(--white);
+            margin-bottom: 10px;
+            font-size: 64px;
+            font-weight: 800;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            position: relative;
+            display: inline-block;
+            background-clip: text;
+            -webkit-background-clip: text;
+            mix-blend-mode: overlay;
+            z-index: 2;
+            letter-spacing: 1px;
+            line-height: 1.1;
+        }
+        
+        .header h1.title .aisat {
+            position: relative;
+            margin-right: -15px;
+            transform: translateX(-20px);
+        }
+        
+        .header h1.title .cares {
+            position: relative;
+            margin-left: -15px;
+            transform: translateX(20px);
+        }
+        
+        .header h1.title .aisat::after,
+        .header h1.title .cares::after {
+            position: absolute;
+            left: 0;
+            top: 0;
+            color: var(--wave-color);
+            z-index: -1;
+            background-clip: text;
+            -webkit-background-clip: text;
+        }
+        
+        .header h1.title .aisat::after {
+            content: "AISAT";
+        }
+        
+        .header h1.title .cares::after {
+            content: "CARES";
+        }
+
+        .header:after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 4px;
+            background-color: var(--accent-color);
+            border-radius: 2px;
+        }
+
+        .card {
+            background-color: var(--white);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 25px;
+            margin-bottom: 20px;
+            transition: var(--transition);
+        }
+
+        .btn-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 16px;
+            background-color: var(--primary-color);
+            color: var(--white);
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            text-align: center;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn i {
+            font-size: 18px;
+        }
+
+        .btn:hover {
+            background-color: var(--primary-light);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+            box-shadow: var(--shadow);
+        }
+        
+        .btn.disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .back-btn {
+            margin-top: 20px;
+            background-color: var(--text-muted);
+        }
+
+        .back-btn:hover {
+            background-color: #5a6268;
+        }
+
+        /* Modal Styles */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: var(--transition);
+        }
+
+        .modal.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: var(--white);
+            padding: 30px;
+            border-radius: var(--border-radius);
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+            transform: translateY(20px);
+            transition: var(--transition);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            position: relative; /* Add position relative for the close button */
+        }
+        
+        .modal-close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 30px;
+            height: 30px;
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+        
+        .modal-close:hover {
+            background: rgba(0, 0, 0, 0.2);
+        }
+        
+        .modal-close i {
+            color: var(--text-dark);
+            font-size: 14px;
+        }
+        
+        .profile-modal-content {
+            text-align: left;
+            transform: scale(0.9);
+            opacity: 0;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+        
+        .profile-modal-content.animate-in {
+            transform: scale(1);
+            opacity: 1;
+        }
+        
+        .profile-modal-content.animate-out {
+            transform: scale(0.9);
+            opacity: 0;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+            width: 100%;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: var(--text-dark);
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        .form-group input:focus {
+            border-color: var(--primary-color);
+            outline: none;
+        }
+        
+        .info-display {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 5px;
+        }
+        
+        .info-display:last-child {
+            border-bottom: none;
+        }
+        
+        .info-label {
+            font-weight: 500;
+            color: var(--text-muted);
+        }
+        
+        .info-value {
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+        
+        .logout-btn {
+            background-color: var(--danger);
+            margin-top: 10px;
+        }
+        
+        .logout-btn:hover {
+            background-color: #c82333;
+        }
+
+        .modal.visible .modal-content {
+            transform: translateY(0);
+        }
+
+        .modal h3 {
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+
+        /* Receipt styles removed */
+
+        /* Message styles */
+        .message {
+            padding: 12px;
+            border-radius: var(--border-radius);
+            margin-top: 15px;
+            font-weight: 500;
+            display: none;
+        }
+
+        .message.success {
+            background-color: rgba(40, 167, 69, 0.1);
+            color: var(--success);
+            border-left: 4px solid var(--success);
+        }
+
+        .message.error {
+            background-color: rgba(220, 53, 69, 0.1);
+            color: var(--danger);
+            border-left: 4px solid var(--danger);
+        }
+        
+        .message.info {
+            background-color: rgba(23, 162, 184, 0.1);
+            color: var(--info);
+            border-left: 4px solid var(--info);
+        }
+        
+        /* Hidden utility class */
+        .hidden {
+            display: none !important;
+        }
+        
+        /* Profile modal specific animations */
+        @keyframes fadeInScale {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        
+        @keyframes fadeOutScale {
+            from { opacity: 1; transform: scale(1); }
+            to { opacity: 0; transform: scale(0.8); }
+        }
+
+        /* Animation classes */
+        .fade-in {
+            animation: fadeIn 0.5s ease forwards;
+        }
+
+        .slide-up {
+            animation: slideUp 0.5s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        /* Calendar styling improvements */
+        #top-calendar-container {
+            margin-bottom: 20px;
+        }
+        
+        .calendar-top-container {
+            background-color: var(--white);
+            border-radius: var(--border-radius);
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+            position: relative;
+        }
+        
+        #calendar-back-btn {
+            margin-top: 15px;
+            width: 100%;
+        }
+
+        /* Enhanced calendar styles for mobile */
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 2px;
+            margin-top: 10px;
+        }
+
+        .day-name {
+            font-weight: bold;
+            text-align: center;
+            padding: 3px;
+            color: var(--primary-color);
+            font-size: 12px;
+        }
+
+        .day {
+            border: 1px solid #E0E6ED;
+            min-height: 35px;
+            height: auto;
+            aspect-ratio: 1/1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+
+        @media (max-width: 360px) {
+            .day {
+                min-height: 30px;
+                font-size: 11px;
+            }
+            
+            .day-name {
+                font-size: 10px;
+                padding: 2px;
+            }
+        }
+
+        .calendar-day {
+            transition: var(--transition);
+            border-radius: 8px;
+        }
+
+        .calendar-day:hover {
+            background-color: rgba(0, 51, 102, 0.1);
+        }
+
+        .calendar-day.selected {
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: bold;
+            transform: scale(1.05);
+        }
+
+        /* Main content area styling */
+        .main-content {
+            background: linear-gradient(to bottom, var(--white) 0%, #dddee1 100%);
+            border-radius: var(--border-radius);
+            margin-top: -10vw;
+            position: relative;
+            z-index: 2;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+        }
+
+        /* Status indicator styling */
+        .status-indicator {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin: 8px 0;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            margin: 0 5px;
+            font-size: 11px;
+        }
+
+        /* Appointment form styling */
+        .appointment-form {
+            margin-top: 15px;
+            padding: 12px;
+        }
+
+        .appointment-form h3 {
+            font-size: 18px;
+        }
+
+        .form-group select {
+            height: 40px;
+        }
+
+        .button-group button {
+            flex: 1;
+            margin: 0 5px;
+        }
+
+        /* Time selection modal */
+        .time-slot {
+            display: inline-block;
+            width: calc(50% - 10px);
+            margin: 5px;
+            padding: 12px 8px;
+            background-color: var(--light-bg);
+            border-radius: var(--border-radius);
+            border: 1px solid #e0e0e0;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .time-slot:hover {
+            background-color: rgba(0, 51, 102, 0.1);
+        }
+
+        .time-slot.selected {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .time-slots-container {
+            margin: 15px 0;
+            max-height: 250px;
+            overflow-y: auto;
+            padding: 5px;
+        }
+
+        .modal-date {
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        /* Time Picker Styles */
+        .time-picker {
+            display: flex;
+            justify-content: space-between;
+            margin: 20px 0;
+            background: rgba(80, 198, 216, 0.05);
+            border-radius: 12px;
+            padding: 15px;
+            border: 1px solid rgba(80, 198, 216, 0.2);
+        }
+
+        .time-picker-column {
+            flex: 1;
+            text-align: center;
+            margin: 0 5px;
+            position: relative;
+        }
+
+        .time-picker-header {
+            color: #50c6d8;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .time-picker-wheel {
+            height: 150px;
+            overflow-y: auto;
+            border-radius: 8px;
+            background-color: white;
+            position: relative;
+            scrollbar-width: none; /* Firefox */
+            -ms-overflow-style: none; /* IE and Edge */
+            scroll-behavior: smooth;
+            box-shadow: inset 0 4px 6px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(80, 198, 216, 0.3);
+        }
+
+        .time-picker-wheel::-webkit-scrollbar {
+            display: none; /* Chrome, Safari, Opera */
+        }
+
+        .time-picker-item {
+            height: 50px;
+            line-height: 50px;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 18px;
+        }
+
+        .time-picker-item:hover {
+            background-color: rgba(80, 198, 216, 0.1);
+        }
+
+        .time-picker-item.selected {
+            background: linear-gradient(135deg, #50c6d8 0%, #3da8b9 100%);
+            color: white;
+            font-weight: 600;
+        }
+
+        /* Request limit styling */
+        .time-picker-item.full {
+            background: linear-gradient(135deg, #ff4757 0%, #ff3742 100%);
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            opacity: 1;
+        }
+
+        .time-picker-item.full:hover {
+            background: linear-gradient(135deg, #ff4757 0%, #ff3742 100%);
+            transform: scale(1.05);
+        }
+
+        .time-picker-item.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .time-picker-item.disabled:hover {
+            background-color: rgba(80, 198, 216, 0.1);
+            transform: none;
+        }
+
+        /* Loading animation */
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .time-picker-loading {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            border-radius: 8px;
+        }
+
+        /* AJAX loading states */
+        .time-picker-item.loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        .time-picker-item.loading::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 12px;
+            height: 12px;
+            margin: -6px 0 0 -6px;
+            border: 2px solid #50c6d8;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s linear infinite;
+        }
+
+        /* Selection indicator */
+        .time-picker-column::before,
+        .time-picker-column::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 50px;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        .time-picker-column::before {
+            top: 35px; /* Position after header */
+            background: linear-gradient(to bottom, rgba(248, 249, 250, 0.9) 0%, rgba(248, 249, 250, 0) 100%);
+        }
+
+        .time-picker-column::after {
+            bottom: 0;
+            background: linear-gradient(to top, rgba(248, 249, 250, 0.9) 0%, rgba(248, 249, 250, 0) 100%);
+        }
+
+        .time-picker-selection {
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 50%;
+            transform: translateY(-25px);
+            height: 50px;
+            border-top: 1px solid rgba(80, 198, 216, 0.2);
+            border-bottom: 1px solid rgba(80, 198, 216, 0.2);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* Gear Icon */
+        .gear-icon {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            width: 40px;
+            height: 40px;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 110;
+            transition: all 0.5s ease;
+        }
+        
+        .gear-icon i {
+            color: white;
+            font-size: 24px;
+        }
+        
+        .gear-icon:hover {
+            transform: rotate(30deg);
+        }
+        
+        /* Wave expanded state */
+        .wave-expanded .svg-container {
+            height: 100vh;
+        }
+        
+        .wave-expanded .container {
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .wave-expanded .gear-icon {
+            background-color: rgba(255, 255, 255, 0.3);
+            transform: rotate(90deg);
+            opacity: 0; /* Make it fade out completely */
+            pointer-events: none; /* Prevent clicking while invisible */
+        }
+        
+        .wave-expanded .message {
+            background-color: rgba(255, 255, 255, 0.15);
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+        
+        .wave-expanded .message.success {
+            background-color: rgba(40, 167, 69, 0.25);
+            border-left: none;
+            color: white;
+        }
+        
+        .wave-expanded .message.error {
+            background-color: rgba(220, 53, 69, 0.25);
+            border-left: none;
+            color: white;
+        }
+        
+        /* Big Queue Now Button */
+        #queue-now-container {
+            position: static;
+            margin-top: 0;
+            margin-bottom: 0;
+            padding: 0;
+            z-index: 1;
+        }
+        
+        .big-queue-btn {
+            margin-top: 20%;
+            background: var(--primary-color);
+            color: white;
+            font-size: 28px;
+            font-weight: 800;
+            padding: 20px;
+            border-radius: 0;
+            border: none;
+            width: 100%;
+            text-align: center;
+            box-shadow: none;
+            cursor: pointer;
+            transition: none;
+            position: static;
+            overflow: visible;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .big-queue-btn:hover {
+            background-color: var(--primary-color);
+        }
+        
+        .big-queue-btn:active {
+            background-color: var(--primary-color);
+        }
+        
+        .big-queue-btn i {
+            font-size: 32px;
+            margin-right: 15px;
+            animation: none;
+        }
+        
+        /* AM/PM Toggle Switch */
+        .ampm-toggle-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .ampm-label {
+            font-weight: 500;
+            font-size: 16px;
+            color: var(--text-dark);
+            margin: 0 10px;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 30px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--wave-color);
+            transition: .4s;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 22px;
+            width: 22px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+        }
+
+        input:checked + .slider {
+            background-color: var(--primary-color);
+        }
+
+        input:focus + .slider {
+            box-shadow: 0 0 1px var(--primary-color);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(30px);
+        }
+
+        /* Rounded sliders */
+        .slider.round {
+            border-radius: 34px;
+        }
+
+        .slider.round:before {
+            border-radius: 50%;
+        }
+
+        /* Profile form inside wave */
+        .wave-profile-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.5s ease;
+            z-index: 5;
+            padding: 20px;
+            overflow-y: auto; /* Allow scrolling */
+        }
+        
+        .wave-expanded .wave-profile-container {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .wave-profile-form {
+            background-color: var(--white);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 20px;
+            width: 100%;
+            max-width: 400px;
+            padding: 30px;
+            color: var(--text-dark);
+            box-shadow: var(--shadow);
+            transform: translateY(30px);
+            transition: all 0.5s ease;
+            margin: 20px auto; /* Add vertical margin */
+            border: 1px solid rgba(107, 154, 196, 0.2);
+            max-height: 90vh; /* Limit height */
+            overflow-y: auto; /* Allow inner scrolling if needed */
+            scrollbar-width: thin; /* Firefox */
+            scrollbar-color: rgba(107, 154, 196, 0.4) transparent; /* Firefox */
+            padding-bottom: 50px; /* Extra padding at bottom for better scrolling experience */
+        }
+        
+        /* Custom scrollbar for webkit browsers */
+        .wave-profile-form::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .wave-profile-form::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        .wave-profile-form::-webkit-scrollbar-thumb {
+            background-color: rgba(107, 154, 196, 0.4);
+            border-radius: 10px;
+        }
+        
+        .wave-expanded .wave-profile-form {
+            transform: translateY(0);
+        }
+        
+        .wave-profile-form h3 {
+            color: var(--primary-dark);
+            margin-bottom: 20px;
+            font-size: 28px;
+            font-weight: 600;
+            text-align: center;
+        }
+        
+        .wave-profile-form .form-group label {
+            color: var(--text-dark);
+            opacity: 0.9;
+        }
+        
+        .wave-profile-form .form-group input {
+            background-color: rgba(255, 255, 255, 0.6);
+            border: 1px solid var(--primary-light);
+            color: var(--text-dark);
+            border-radius: 6px;
+            padding: 10px;
+            font-size: 15px;
+            width: 100%;
+            transition: var(--transition);
+        }
+        
+        .wave-profile-form .form-group input:focus {
+            background-color: rgba(255, 255, 255, 0.8);
+            box-shadow: 0 0 0 2px rgba(107, 154, 196, 0.3);
+            outline: none;
+            border-color: var(--primary-color);
+        }
+        
+        .wave-profile-form .form-group input::placeholder {
+            color: var(--text-muted);
+        }
+        
+        /* Responsive adjustments for smaller screens */
+        @media (max-height: 700px) {
+            .wave-profile-form {
+                padding: 20px;
+                margin: 10px auto;
+                font-size: 0.95em;
+            }
+            
+            .wave-profile-form h3 {
+                margin-bottom: 15px;
+                font-size: 24px;
+            }
+            
+            .form-group {
+                margin-bottom: 10px;
+            }
+        }
+        
+        @media (max-height: 600px) {
+            .wave-profile-form {
+                padding: 15px;
+                max-height: 95vh;
+            }
+            
+            .wave-profile-container {
+                padding: 10px;
+                align-items: flex-start; /* Align to top instead of center */
+            }
+            
+            .wave-profile-info {
+                padding: 10px;
+                margin-bottom: 15px;
+            }
+            
+            .wave-profile-form .btn {
+                padding: 12px;
+            }
+            
+            .info-display {
+                padding: 6px 0;
+            }
+        }
+        
+        @media (max-width: 350px) {
+            .wave-profile-form {
+                padding: 15px;
+            }
+            
+            .wave-profile-form h3 {
+                font-size: 22px;
+            }
+            
+            .form-group input {
+                padding: 10px;
+            }
+        }
+        
+        .wave-profile-info {
+            background-color: rgba(151, 196, 230, 0.2);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .wave-profile-form .info-display {
+            border-bottom-color: rgba(107, 154, 196, 0.2);
+        }
+        
+        .wave-profile-form .info-label {
+            color: var(--text-muted);
+        }
+        
+        .wave-profile-form .info-value {
+            color: var(--text-dark);
+        }
+
+        /* Handle virtual keyboard appearance on mobile */
+        @media (max-height: 450px) {
+            .wave-profile-container {
+                align-items: flex-start;
+            }
+            
+            .wave-profile-form {
+                margin-top: 10px;
+                margin-bottom: 30px;
+                max-height: none;
+            }
+        }
+
+        /* Compact form styles for wave profile */
+        .wave-profile-form .form-group {
+            margin-bottom: 12px;
+        }
+        
+        .wave-profile-form .form-group label {
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+        
+        .wave-profile-form .form-group input {
+            padding: 10px;
+            font-size: 15px;
+        }
+        
+        .wave-profile-form .btn-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .wave-profile-form .btn {
+            padding: 12px;
+            font-size: 15px;
+        }
+
+        /* Name fields styling */
+        .name-fields {
+            margin-bottom: 25px;
+        }
+        
+        .name-fields-container {
+            display: flex;
+            gap: 10px;
+            width: 100%;
+        }
+        
+        .name-fields-container + .name-fields-container {
+            margin-top: 18px;
+        }
+        
+        .name-field {
+            flex: 1;
+            position: relative;
+            margin-bottom: 8px;
+        }
+        
+        .name-field input, 
+        .name-field select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--primary-light);
+            border-radius: 6px;
+            background-color: rgba(255, 255, 255, 0.6);
+            color: var(--text-dark);
+            font-size: 15px;
+        }
+        
+        .name-field select {
+            appearance: none;
+            -webkit-appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%232c3e50' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: calc(100% - 10px) center;
+            padding-right: 30px;
+        }
+        
+        .name-field input::placeholder, 
+        .name-field select::placeholder {
+            color: var(--text-muted);
+        }
+        
+        .name-field input:focus, 
+        .name-field select:focus {
+            background-color: rgba(255, 255, 255, 0.8);
+            box-shadow: 0 0 0 2px rgba(107, 154, 196, 0.3);
+            outline: none;
+        }
+        
+        .field-label {
+            font-size: 10px;
+            color: var(--text-muted);
+            position: absolute;
+            bottom: -16px;
+            left: 2px;
+            white-space: nowrap;
+            font-weight: 400;
+        }
+        
+        /* Responsive adjustments for name fields */
+        @media (max-width: 350px) {
+            .name-fields-container {
+                gap: 6px;
+            }
+            
+            .name-field input, 
+            .name-field select {
+                padding: 8px;
+                font-size: 14px;
+            }
+            
+            .field-label {
+                font-size: 9px;
+            }
+        }
+
+        /* Form validation styles */
+        .form-group .validation-icon {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 16px;
+        }
+        
+        .form-group .valid-icon {
+            color: var(--success);
+        }
+        
+        .form-group .invalid-icon {
+            color: var(--danger);
+        }
+        
+        .form-group.has-validation {
+            position: relative;
+        }
+        
+        .form-group.valid input {
+            border-color: rgba(102, 187, 106, 0.4);
+        }
+        
+        .form-group.invalid input {
+            border-color: rgba(229, 115, 115, 0.4);
+        }
+
+        .wave-profile-form .validation-icon {
+            top: 38px;
+        }
+        
+        /* Notification Badge */
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: #ff3b30;
+            color: white;
+            font-size: 10px;
+            min-width: 16px;
+            height: 16px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            padding: 0 4px;
+        }
+        
+        /* Notification Panel Styles */
+        #notification-panel {
+            z-index: 200;
+            opacity: 0;
+            visibility: hidden;
+        }
+        
+        .notification-tabs {
+            display: flex;
+            margin-bottom: 15px;
+            border-radius: 10px;
+            overflow: hidden;
+            background-color: rgba(107, 154, 196, 0.1);
+        }
+        
+        .tab-btn {
+            flex: 1;
+            padding: 10px;
+            background: none;
+            border: none;
+            color: var(--text-dark);
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .tab-btn.active {
+            background-color: rgba(107, 154, 196, 0.2);
+            font-weight: 600;
+        }
+        
+        .tab-content {
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+        
+        .notification-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .notification-item {
+            background-color: rgba(151, 196, 230, 0.1);
+            border-radius: 8px;
+            padding: 12px;
+            position: relative;
+        }
+        
+        .notification-item .name {
+            font-weight: 600;
+            font-size: 16px;
+            margin-bottom: 4px;
+            color: var(--text-dark) !important;
+        }
+        
+        .notification-item .details {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+        
+        .notification-item .details .status {
+            color: var(--primary-dark);
+            font-weight: 500;
+        }
+        
+        .notification-item .timer {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: var(--danger);
+            color: white;
+            font-size: 12px;
+            padding: 2px 6px;
+            border-radius: 10px;
+        }
+        
+        .empty-message {
+            text-align: center;
+            padding: 20px;
+            color: var(--text-muted);
+        }
+        
+        .empty-message i {
+            font-size: 24px;
+            margin-bottom: 10px;
+            display: block;
+        }
+        
+        .empty-message p {
+            margin: 0;
+            font-size: 14px;
+        }
+        
+        /* Wave animation for notification icon */
+        body.notifications-expanded .header-bg {
+            height: 100vh;
+        }
+        
+        body.notifications-expanded .container {
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        body.notifications-expanded #notification-panel {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        body.notifications-expanded #notification-icon {
+            background-color: rgba(255, 255, 255, 0.3);
+            transform: rotate(90deg);
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        /* Hide gear icon when notification panel is open */
+        body.notifications-expanded #settings-icon {
+            display: none;
+        }
+        
+        /* Highlight current user's request */
+        .notification-item.current-user {
+            background-color: rgba(182, 220, 254, 0.4);
+            border-left: 3px solid var(--primary-color);
+        }
+        
+        /* Add countdown warning style */
+        .notification-item .timer.warning {
+            color: white;
+            background-color: var(--warning);
+            font-weight: bold;
+        }
+        
+        /* Request ID display style */
+        .request-id-display {
+            font-size: 11px;
+            color: var(--primary-dark);
+            margin-top: 4px;
+            font-family: monospace;
+            font-weight: 500;
+        }
+
+        /* Scroll Reveal Styles */
+        .scroll-reveal-container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 0 20px;
+            padding-bottom: 50px; /* Add some padding at the bottom */
+            position: absolute;
+            left: 0;
+            right: 0;
+            z-index: 1;
+            top: 100vh; /* Start after the main container */
+            pointer-events: auto; /* Ensure elements are clickable */
+        }
+        
+        /* Spacer to ensure proper layout */
+        .content-spacer {
+            height: 100vh; /* Match the height of the main container */
+            width: 100%;
+            position: relative;
+            z-index: 0;
+            pointer-events: none; /* Allow clicking through to elements below */
+        }
+        
+        .scroll-reveal-section {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s cubic-bezier(0.215, 0.61, 0.355, 1), 
+                        transform 0.6s cubic-bezier(0.215, 0.61, 0.355, 1);
+            margin-bottom: 30px;
+            will-change: opacity, transform; /* Performance optimization */
+            perspective: 1000px; /* For better 3D performance */
+            backface-visibility: hidden; /* For better 3D performance */
+            background-color: var(--white);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 25px;
+        }
+        
+        .scroll-reveal-section.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .scroll-reveal-section.hiding {
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: opacity 0.4s ease-in, transform 0.4s ease-in;
+        }
+        
+        /* Add different animation delays for a cascade effect */
+        .scroll-reveal-section:nth-child(1) {
+            transition-delay: 0.05s;
+        }
+        
+        .scroll-reveal-section:nth-child(2) {
+            transition-delay: 0.1s;
+        }
+        
+        .scroll-reveal-section:nth-child(3) {
+            transition-delay: 0.15s;
+        }
+        
+        .scroll-reveal-section h3 {
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            font-size: 20px;
+            position: relative;
+            padding-bottom: 10px;
+        }
+        
+        .scroll-reveal-section h3:after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 40px;
+            height: 3px;
+            background-color: var(--accent-color);
+            border-radius: 2px;
+        }
+        
+        .announcement-item {
+            padding: 15px;
+            margin-bottom: 15px;
+            background-color: rgba(0, 51, 102, 0.05);
+            border-radius: 8px;
+            border-left: 3px solid var(--primary-color);
+            overflow: hidden;
+        }
+        
+        .announcement-item h4 {
+            margin: 0 0 10px 0;
+            color: var(--primary-color);
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .announcement-item p {
+            margin: 0 0 12px 0;
+            line-height: 1.5;
+            color: var(--text-dark);
+        }
+        
+        .announcement-item .date {
+            font-size: 12px;
+            color: var(--text-muted);
+            display: block;
+            text-align: right;
+            margin-top: 5px;
+        }
+        
+        .announcement-image-container {
+            margin: 10px 0;
+            border-radius: 6px;
+            overflow: hidden;
+            max-height: 200px;
+            text-align: center;
+            background-color: rgba(0, 0, 0, 0.03);
+        }
+        
+        .announcement-image-container img {
+            max-width: 100%;
+            max-height: 200px;
+            object-fit: contain;
+        }
+        
+        .facebook-embed {
+            margin: 10px 0;
+            background-color: #f8f9fa;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        
+        .facebook-embed iframe {
+            width: 100% !important;
+            border: none !important;
+        }
+
+        /* Enhanced announcement styles */
+        .announcement-item {
+            padding: 15px;
+            margin-bottom: 15px;
+            background-color: rgba(0, 51, 102, 0.05);
+            border-radius: 8px;
+            border-left: 3px solid var(--primary-color);
+            overflow: hidden;
+        }
+
+        .announcement-item h4 {
+            margin: 0 0 10px 0;
+            color: var(--primary-color);
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .announcement-item p {
+            margin: 0 0 12px 0;
+            line-height: 1.5;
+            color: var(--text-dark);
+        }
+
+        .announcement-item .date {
+            font-size: 12px;
+            color: var(--text-muted);
+            display: block;
+            text-align: right;
+            margin-top: 5px;
+        }
+
+        .announcement-image-container {
+            margin: 10px 0;
+            border-radius: 6px;
+            overflow: hidden;
+            max-height: 200px;
+            text-align: center;
+            background-color: rgba(0, 0, 0, 0.03);
+        }
+
+        .announcement-image-container img {
+            max-width: 100%;
+            max-height: 200px;
+            object-fit: contain;
+        }
+
+        .facebook-embed {
+            margin: 10px 0;
+            background-color: #f8f9fa;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .facebook-embed iframe {
+            width: 100% !important;
+            border: none !important;
+        }
+
+        .quick-links {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .quick-link-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 15px;
+            background-color: rgba(80, 198, 216, 0.1);
+            border-radius: 8px;
+            text-decoration: none;
+            color: var(--text-dark);
+            transition: all 0.3s ease;
+        }
+
+        .quick-link-item:hover {
+            background-color: rgba(80, 198, 216, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .quick-link-item i {
+            font-size: 24px;
+            color: var(--wave-color);
+            margin-bottom: 8px;
+        }
+
+        .contact-info {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .contact-item i {
+            width: 30px;
+            height: 30px;
+            background-color: rgba(80, 198, 216, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--wave-color);
+        }
+
+        .notification-item .details .request-id-text {
+            color: var(--primary-dark);
+            font-weight: 500;
+        }
+
+        /* Make "Waiting" status grey but keep "On Call" dark blue */
+        .notification-item .status.waiting {
+            color: var(--text-muted);
+        }
+
+        /* Tutorial Modal Styles */
+        #tutorial-modal .modal-content {
+            padding: 20px;
+            max-width: 95%;
+            width: 500px;
+        }
+
+        @media (max-width: 480px) {
+            #tutorial-modal .modal-content {
+                padding: 15px;
+                width: 95%;
+                max-width: 95%;
+            }
+        }
+
+        .video-container {
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        #tutorial-video {
+            background-color: #000;
+            object-fit: contain;
+        }
+
+        #tutorial-video::-webkit-media-controls-panel {
+            background-color: rgba(0,0,0,0.7);
+        }
+
+        #tutorial-video::-webkit-media-controls-play-button {
+            background-color: var(--primary-color);
+            border-radius: 50%;
+            color: white;
+        }
+
+        #tutorial-done-btn {
+            margin-top: 15px;
+            width: 100%;
+            padding: 12px;
+            font-weight: 600;
+        }
+
+        /* Play button overlay */
+        .play-instructions {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 5;
+            cursor: pointer;
+        }
+
+        .play-instructions i {
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        /* Improve modal animation for mobile */
+        .modal-content {
+            transform: translateY(20px) scale(0.95);
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+
+        .modal.visible .modal-content {
+            transform: translateY(0) scale(1);
+        }
+
+        .wave-expanded .header-bg {
+            height: 100vh;
+        }
+    </style>
+    
+<script>
+    document.addEventListener('deviceready', function() {
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('webpushr-sw.js')
+                .then(function() {
+                    console.log('Service worker registered');
+                })
+                .catch(function(error) {
+                    console.log('Service worker registration failed:', error);
+                });
+        }
+    }, false);
+</script>
+</head>
+<body>
+
+    <div style="max-height: 100px;" id="announcements-container">  <div id="fb-root"></div>
+    <script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v23.0"></script>
+    <!-- Simple Header Background -->
+    <div class="header-bg"></div>
+    
+    <!-- Profile Form inside Wave -->
+    <div class="wave-profile-container" id="wave-profile">
+        <div class="wave-profile-form">
+            <h3>Edit Profile</h3>
+            <form id="wave-profile-form">
+                <!-- Name Fields -->
+                <div class="form-group name-fields">
+                    <label>Name</label>
+                    <div class="name-fields-container">
+                        <div class="name-field">
+                            <input type="text" id="wave-firstname" name="firstname" placeholder="First Name" required>
+                            <span class="field-label">First</span>
+                        </div>
+                        <div class="name-field">
+                            <input type="text" id="wave-lastname" name="lastname" placeholder="Last Name" required>
+                            <span class="field-label">Last</span>
+                        </div>
+                    </div>
+                    <div class="name-fields-container" style="margin-top: 8px;">
+                        <div class="name-field">
+                            <input type="text" id="wave-middleinitial" name="middleinitial" placeholder="M.I." maxlength="2">
+                            <span class="field-label">M.I.</span>
+                        </div>
+                        <div class="name-field">
+                            <select id="wave-suffix" name="suffix">
+                                <option value="">None</option>
+                                <option value="Jr.">Jr.</option>
+                                <option value="Sr.">Sr.</option>
+                                <option value="II">II</option>
+                                <option value="III">III</option>
+                                <option value="IV">IV</option>
+                                <option value="V">V</option>
+                            </select>
+                            <span class="field-label">Suffix</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="wave-email">Email</label>
+                    <input type="email" id="wave-email" name="email" placeholder="Email" required>
+                </div>
+                <div class="form-group">
+                    <label for="wave-cell">Phone Number</label>
+                    <input type="tel" id="wave-cell" name="cell" placeholder="Phone Number">
+                </div>
+                <div class="form-group">
+                    <label for="wave-password">Password</label>
+                    <input type="password" id="wave-password" name="password" placeholder="Password" required>
+                </div>
+                <div class="form-group has-validation">
+                    <label for="wave-confirm-password">Confirm Password</label>
+                    <input type="password" id="wave-confirm-password" name="confirm-password" placeholder="Confirm Password" required>
+                    <span class="validation-icon valid-icon hidden"><i class="fas fa-check"></i></span>
+                    <span class="validation-icon invalid-icon hidden"><i class="fas fa-times"></i></span>
+                </div>
+                <div class="form-group wave-profile-info">
+                    <label>Student Information</label>
+                    <div class="info-display">
+                        <span class="info-label">ID Number:</span>
+                        <span class="info-value" id="wave-idno-display">-</span>
+                    </div>
+                    <div class="info-display">
+                        <span class="info-label">Level:</span>
+                        <span class="info-value" id="wave-level-display">-</span>
+                    </div>
+                    <div class="info-display">
+                        <span class="info-label">Course/Strand:</span>
+                        <span class="info-value" id="wave-course-display">-</span>
+                    </div>
+                </div>
+                
+                <!-- Remove the editable course/strand field -->
+                
+                <div class="btn-container" style="margin-top:20px;">
+                    <button type="submit" class="btn" id="wave-save-profile-btn" style="background-color: var(--primary-color);">
+                        <i class="fas fa-save"></i> Save Changes
+                    </button>
+                    <button type="button" class="btn" id="wave-close-profile-btn" style="background-color: rgba(0, 0, 0, 0.3);">
+                        <i class="fas fa-times"></i> Cancel
+                    </button>
+                    <button type="button" class="btn logout-btn" id="wave-logout-btn">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </button>
+                </div>
+                <div id="wave-profile-message" class="message"></div>
+            </form>
+        </div>
+    </div>
+
+    <div class="gear-icon" id="settings-icon">
+        <i class="fas fa-cog"></i>
+    </div>
+    
+    <!-- Notification Icon -->
+    <div class="gear-icon" id="notification-icon" style="right: 20px; left: auto;">
+        <i class="fas fa-bell"></i>
+        <span class="notification-badge">3</span>
+    </div>
+    
+    <!-- Notification Panel -->
+    <div class="wave-profile-container" id="notification-panel">
+        <div class="wave-profile-form">
+            <h3>Notifications</h3>
+            <div class="notification-tabs">
+                <button class="tab-btn active" data-tab="waiting">Waiting</button>
+                <button class="tab-btn" data-tab="oncall">On Call</button>
+            </div>
+            <div class="tab-content" id="waiting-tab">
+                <div class="notification-list" id="waiting-list">
+                    <p class="empty-message">Loading requests...</p>
+                </div>
+            </div>
+            <div class="tab-content hidden" id="oncall-tab">
+                <div class="notification-list" id="oncall-list">
+                    <p class="empty-message">Loading requests...</p>
+                </div>
+            </div>
+            <div class="btn-container" style="margin-top:20px;">
+                <button type="button" class="btn" id="close-notification-btn" style="background-color: var(--primary-color);">
+                    <i class="fas fa-times"></i> Close
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Main Container -->
+    <div class="container">
+        <div class="header">
+            <h1 class="title"><span class="aisat">AISAT</span> <span class="cares">CARES</span></h1>
+        </div>
+                    <!-- Big Queue Now Button -->
+                    <div id="queue-now-container" class="slide-up">
+                        <button id="queue-now-btn" class="big-queue-btn">
+                            <i class="fas fa-bolt"></i> QUEUE NOW
+                        </button>
+                    </div>
+        
+        <div class="main-content">
+            <!-- Calendar at the top (initially hidden) -->
+            <div class="calendar-top-container slide-up hidden" id="top-calendar-section">
+                <div id="top-calendar-container"></div>
+            </div>
+            
+
+            
+            <!-- Main Options -->
+            <div id="main-options" class="btn-container card slide-up hidden">
+                <button id="queue-btn" class="btn">
+                    <i class="fas fa-users"></i> Queue
+                </button>
+                <button id="appointment-btn" class="btn">
+                    <i class="fas fa-calendar-alt"></i> Appointment Schedule
+                </button>
+                <button class="btn back-btn">
+                    <i class="fas fa-arrow-left"></i> Back
+                </button>
+            </div>
+            
+            <!-- Queue Options -->
+            <div id="queue-options" class="btn-container card hidden slide-up">
+                <button id="shs-btn" class="btn">
+                    <i class="fas fa-school"></i> Senior High School (SHS)
+                </button>
+                <button id="college-btn" class="btn">
+                    <i class="fas fa-graduation-cap"></i> College
+                </button>
+                <button class="btn back-btn">
+                    <i class="fas fa-arrow-left"></i> Back
+                </button>
+            </div>
+            
+            <!-- Service Type Options -->
+            <div id="service-options" class="btn-container card hidden slide-up">
+                <button id="express-btn" class="btn">
+                    <i class="fas fa-bolt"></i> EXPRESS
+                </button>
+                <button id="regular-btn" class="btn">
+                    <i class="fas fa-clock"></i> REGULAR
+                </button>
+                <button id="priority-btn" class="btn">
+                    <i class="fas fa-check"></i> PRIORITY
+                </button>
+                <button class="btn back-btn">
+                    <i class="fas fa-arrow-left"></i> Back
+                </button>
+            </div>
+            
+            <!-- Payment Options -->
+            <div id="payment-options" class="btn-container card hidden slide-up">
+                <button id="full-payment-btn" class="btn">
+                    <i class="fas fa-money-bill-wave"></i> Full Payment
+                </button>
+                <button id="installment-btn" class="btn">
+                    <i class="fas fa-file-invoice-dollar"></i> Installment
+                </button>
+                <button class="btn back-btn">
+                    <i class="fas fa-arrow-left"></i> Back
+                </button>
+            </div>
+            
+            <!-- Appointment Options -->
+            <div id="appointment-options" class="btn-container card hidden slide-up">
+                <button class="btn back-btn">
+                    <i class="fas fa-arrow-left"></i> Back
+                </button>
+            </div>
+        </div>  
+        <br>
+                   
+     
+    </div>
+    
+    
+    <!-- Spacer to maintain layout -->
+    <div class="content-spacer"></div>
+    
+    <!-- Scroll Reveal Content -->
+    <div class="scroll-reveal-container">
+        <div class="scroll-reveal-section fade-section">
+            <h3>Announcements</h3>
+            <div class="fb-page" data-href="https://www.facebook.com/thephoenixadvisory" data-tabs="timeline" data-width="" data-height="" data-small-header="false" data-adapt-container-width="true" data-hide-cover="false" data-show-facepile="true"><blockquote cite="https://www.facebook.com/thephoenixadvisory" class="fb-xfbml-parse-ignore"><a href="https://www.facebook.com/thephoenixadvisory">The Phoenix Advisory</a></blockquote></div>
+
+        </div>
+        
+        
+        <div class="scroll-reveal-section fade-section">
+            <h3>Quick Links</h3>
+            <div class="quick-links">
+                <a href="https://www.facebook.com/aisatcollegedasmaph" class="quick-link-item">
+                    <i class="fas fa-book"></i>
+                    <span>Our page</span>
+                </a>
+
+                <a href="about.html" class="quick-link-item">
+                    <i class="fas fa-question-circle"></i>
+                    <span>About Us</span>
+                </a>
+            </div>
+        </div>
+        
+        <div class="scroll-reveal-section fade-section">
+            <h3>Contact Information</h3>
+            <div class="contact-info">
+                <div class="contact-item">
+                    <i class="fas fa-phone"></i>
+                    <span>+63 (969) 699-6969</span>
+                </div>
+                <div class="contact-item">
+                    <i class="fas fa-envelope"></i>
+                    <span>info@aisat.edu.ph</span>
+                </div>
+                <div class="contact-item">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <span>123 AISAT Campus, Dasmariñas City, Cavite, Philippines</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Time Selection Modal -->
+    <div id="time-modal" class="modal">
+        <div class="modal-content">
+            <h3>Select Time</h3>
+            <span class="modal-date" id="selected-date-display">Date: </span>
+            <div style="margin: 10px 0; padding: 8px; background: rgba(255, 55, 66, 0.1); border-radius: 6px; border-left: 3px solid #ff3742;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div style="font-size: 12px; color: #ff3742; font-weight: 600;">
+                        <i class="fas fa-exclamation-triangle"></i> Request Limit: 5 requests per time slot
+                    </div>
+                    <div style="display: flex; gap: 5px;">
+                        <button id="refresh-limits-btn" style="background: none; border: none; color: #ff3742; cursor: pointer; font-size: 12px; padding: 2px 6px; border-radius: 3px; transition: background 0.2s;" title="Refresh availability">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                        <button id="debug-limits-btn" style="background: none; border: none; color: #ff3742; cursor: pointer; font-size: 12px; padding: 2px 6px; border-radius: 3px; transition: background 0.2s;" title="Debug current time slot">
+                            <i class="fas fa-bug"></i>
+                        </button>
+                    </div>
+                </div>
+                <div style="font-size: 11px; color: #666; margin-top: 2px;">
+                    Red time slots are full and cannot be selected
+                </div>
+            </div>
+            
+            <div class="time-picker">
+                <div class="time-picker-column">
+                    <div class="time-picker-header">Hour</div>
+                    <div class="time-picker-wheel" id="hour-wheel">
+                        <div class="time-picker-item" data-value="7" data-ampm="AM">7</div>
+                        <div class="time-picker-item" data-value="8" data-ampm="AM">8</div>
+                        <div class="time-picker-item" data-value="9" data-ampm="AM">9</div>
+                        <div class="time-picker-item" data-value="10" data-ampm="AM">10</div>
+                        <div class="time-picker-item" data-value="11" data-ampm="AM">11</div>
+                        <div class="time-picker-item" data-value="12" data-ampm="PM">12</div>
+                        <div class="time-picker-item" data-value="1" data-ampm="PM">1</div>
+                        <div class="time-picker-item" data-value="2" data-ampm="PM">2</div>
+                        <div class="time-picker-item" data-value="3" data-ampm="PM">3</div>
+                        <div class="time-picker-item" data-value="4" data-ampm="PM">4</div>
+                        <div class="time-picker-item" data-value="5" data-ampm="PM">5</div>
+                    </div>
+                    <div class="time-picker-selection"></div>
+                </div>
+                <div class="time-picker-column">
+                    <div class="time-picker-header">Minute</div>
+                    <div class="time-picker-wheel" id="minute-wheel">
+                        <div class="time-picker-item" data-value="00">00</div>
+                        <div class="time-picker-item" data-value="05">05</div>
+                        <div class="time-picker-item" data-value="10">10</div>
+                        <div class="time-picker-item" data-value="15">15</div>
+                        <div class="time-picker-item" data-value="20">20</div>
+                        <div class="time-picker-item" data-value="25">25</div>
+                        <div class="time-picker-item" data-value="30">30</div>
+                        <div class="time-picker-item" data-value="35">35</div>
+                        <div class="time-picker-item" data-value="40">40</div>
+                        <div class="time-picker-item" data-value="45">45</div>
+                        <div class="time-picker-item" data-value="50">50</div>
+                        <div class="time-picker-item" data-value="55">55</div>
+                    </div>
+                    <div class="time-picker-selection"></div>
+                </div>
+            </div>
+            
+            <!-- AM/PM Toggle Switch -->
+            <div class="ampm-toggle-container" style="display: none;">
+                <span class="ampm-label">AM</span>
+                <label class="switch">
+                    <input type="checkbox" id="ampm-toggle">
+                    <span class="slider round"></span>
+                </label>
+                <span class="ampm-label">PM</span>
+            </div>
+            
+            <div id="time-slot-info" style="margin: 15px 0; padding: 10px; background: rgba(80, 198, 216, 0.1); border-radius: 6px; display: none;">
+                <div style="font-size: 12px; color: #50c6d8; font-weight: 600;">
+                    <i class="fas fa-info-circle"></i> <span id="time-slot-status">Select a time to see availability</span>
+                </div>
+            </div>
+            
+            <div class="btn-container">
+                <button id="confirm-time-btn" class="btn">
+                    <i class="fas fa-check"></i> Continue
+                </button>
+                <button id="cancel-time-btn" class="btn back-btn">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+
+    
+    <!-- Receipt Modal removed -->
+
+    <!-- Add tutorial modal after the other modals -->
+    <!-- Tutorial Video Modal -->
+    <div id="tutorial-modal" class="modal">
+        <div class="modal-content" style="max-width: 90%; width: auto;">
+            <h3>Welcome to AISAT CARES</h3>
+            <p style="margin-bottom: 15px;">Watch this quick tutorial to learn how to use the system:</p>
+            <div class="video-container" style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; margin-bottom: 15px; max-width: 100%; border-radius: 8px;">
+                <video id="tutorial-video" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; background-color: #000;" controls playsinline webkit-playsinline>
+                    <source src="https://dl.dropboxusercontent.com/scl/fi/sdt61gaapvvyfye28mlvv/lv_0_20250710173441.mp4?rlkey=784ig3tux9nigan6sw4zcpr23&e=1&st=qqj9zz3p&dl=0" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+            </div>
+            <button id="tutorial-done-btn" class="btn" style="background-color: var(--primary-color);">
+                <i class="fas fa-check"></i> I've Watched the Tutorial
+            </button>
+        </div>
+    </div>
+
+    
+    <script src="js/tutorial.js"></script>
+
+    <script>
+        // baseUrl is defined in the head section
+        
+        // Notification badge function moved to notification.js
+        
+        // Time wheel functions - defined globally
+        let timePickerInitialized = false;
+        
+        // Helper function to select an item in a wheel
+        function selectWheelItem(wheelEl, item) {
+            // Remove selected class from all items in this wheel
+            const items = wheelEl.querySelectorAll('.time-picker-item');
+            items.forEach(i => i.classList.remove('selected'));
+            
+            // Add selected class to the clicked item
+            item.classList.add('selected');
+        }
+        
+        // Debounce function to limit scroll event handling
+        function debounce(func, wait) {
+            let timeout;
+            return function() {
+                const context = this;
+                const args = arguments;
+                clearTimeout(timeout);
+                timeout = setTimeout(() => {
+                    func.apply(context, args);
+                }, wait);
+            };
+        }
+        
+        // Initialize time picker wheel
+        function initTimeWheel(wheelEl, defaultValue) {
+            const items = wheelEl.querySelectorAll('.time-picker-item');
+            let selectedItem = null;
+            
+            // Add click event to each item
+            items.forEach(item => {
+                item.addEventListener('click', function() {
+                    // Select this item (even if full)
+                    selectWheelItem(wheelEl, item);
+                    
+                    // Center the selected item
+                    const wheelRect = wheelEl.getBoundingClientRect();
+                    const itemRect = item.getBoundingClientRect();
+                    const offset = itemRect.top - wheelRect.top - (wheelRect.height / 2) + (itemRect.height / 2);
+                    
+                    wheelEl.scrollBy({
+                        top: offset,
+                        behavior: 'smooth'
+                    });
+                    
+                    // If this is an hour selection, update minute limits
+                    if (wheelEl.id === 'hour-wheel') {
+                        updateMinuteLimitsForHour(item);
+                    } else if (wheelEl.id === 'minute-wheel') {
+                        // If this is a minute selection, update time slot info
+                        updateTimeSlotInfo();
+                    }
+                });
+            });
+            
+            // Set default selection
+            if (defaultValue) {
+                const defaultItem = Array.from(items).find(item => item.getAttribute('data-value') === defaultValue);
+                if (defaultItem) {
+                    selectWheelItem(wheelEl, defaultItem);
+                } else {
+                    selectWheelItem(wheelEl, items[0]); // Select first item as fallback
+                }
+            } else {
+                selectWheelItem(wheelEl, items[0]); // Select first item by default
+            }
+            
+            // Add scroll event to handle selection during scrolling
+            wheelEl.addEventListener('scroll', function() {
+                debounce(function() {
+                    const wheelRect = wheelEl.getBoundingClientRect();
+                    const wheelCenter = wheelRect.top + (wheelRect.height / 2);
+                    
+                    // Find the closest item to the center
+                    let closestItem = null;
+                    let minDistance = Infinity;
+                    
+                    items.forEach(item => {
+                        const itemRect = item.getBoundingClientRect();
+                        const itemCenter = itemRect.top + (itemRect.height / 2);
+                        const distance = Math.abs(itemCenter - wheelCenter);
+                        
+                        if (distance < minDistance) {
+                            minDistance = distance;
+                            closestItem = item;
+                        }
+                    });
+                    
+                    if (closestItem) {
+                        selectWheelItem(wheelEl, closestItem);
+                        
+                        // Update limits and info when scrolling
+                        if (wheelEl.id === 'hour-wheel') {
+                            updateMinuteLimitsForHour(closestItem);
+                        } else if (wheelEl.id === 'minute-wheel') {
+                            updateTimeSlotInfo();
+                        }
+                    }
+                }, 100)();
+            });
+            
+            // Enable circular scrolling
+            wheelEl.addEventListener('scroll', function() {
+                const scrollTop = this.scrollTop;
+                const scrollHeight = this.scrollHeight;
+                const clientHeight = this.clientHeight;
+                
+                // Calculate total scrollable height (all items)
+                const totalHeight = scrollHeight - clientHeight;
+                const itemHeight = items[0].offsetHeight;
+                
+                // If scrolled to the bottom, jump back to the top with a small offset
+                if (scrollTop >= totalHeight - 1) {
+                    // Don't go completely to 0 to avoid visible jump
+                    this.scrollTop = itemHeight;
+                }
+                
+                // If scrolled to the top, jump to the bottom with a small offset
+                if (scrollTop <= 0) {
+                    // Don't go completely to bottom to avoid visible jump
+                    this.scrollTop = totalHeight - itemHeight;
+                }
+            });
+            
+            // Clone first and last items and add them to opposite ends to create illusion of infinite scroll
+            const firstItemClone = items[0].cloneNode(true);
+            const lastItemClone = items[items.length - 1].cloneNode(true);
+            
+            wheelEl.appendChild(firstItemClone);
+            wheelEl.insertBefore(lastItemClone, items[0]);
+        }
+        
+        // Get the selected values from the time picker
+        function getSelectedTime() {
+            const hourWheel = document.getElementById('hour-wheel');
+            const minuteWheel = document.getElementById('minute-wheel');
+            
+            const hourItem = hourWheel.querySelector('.time-picker-item.selected');
+            const minuteItem = minuteWheel.querySelector('.time-picker-item.selected');
+            
+            if (!hourItem || !minuteItem) {
+                return null;
+            }
+            
+            const hour = hourItem.getAttribute('data-value');
+            const minute = minuteItem.getAttribute('data-value');
+            const ampm = hourItem.getAttribute('data-ampm');
+            
+            // Convert to 24-hour format for API
+            let hour24 = parseInt(hour);
+            if (ampm === 'PM' && hour24 < 12) {
+                hour24 += 12;
+            } else if (ampm === 'AM' && hour24 === 12) {
+                hour24 = 0;
+            }
+            
+            // Format for display and API
+            const displayTime = `${hour}:${minute} ${ampm}`;
+            const apiTime = `${hour24.toString().padStart(2, '0')}:${minute}`;
+            
+            return {
+                display: displayTime,
+                api: apiTime
+            };
+        }
+        
+        // Cache for request limits to avoid repeated API calls
+        const requestLimitCache = new Map();
+        const CACHE_DURATION = 30000; // 30 seconds cache
+
+        // Function to check request limits for a specific hour (not exact minute)
+        async function checkRequestLimit(date, hour, minute) {
+            const token = localStorage.getItem('userToken');
+            if (!token) return { count: 0, limit: 5, isFull: false };
+            
+            // Use hour-based cache key instead of minute-based
+            const cacheKey = `${date}-${hour}-hour`;
+            const cached = requestLimitCache.get(cacheKey);
+            
+            // Return cached result if still valid
+            if (cached && (Date.now() - cached.timestamp) < CACHE_DURATION) {
+                return cached.data;
+            }
+            
+            try {
+                const response = await fetch(`${baseUrl}/api/user/requests`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Server responded with ${response.status}`);
+                }
+                
+                const requests = await response.json();
+                
+                // Filter requests for the specific date and hour (entire hour range)
+                const requestsInHour = requests.filter(request => {
+                    if (!request.schedule) return false;
+                    
+                    // Parse the schedule string directly to avoid timezone issues
+                    const scheduleParts = request.schedule.split('T');
+                    const datePart = scheduleParts[0];
+                    const timePart = scheduleParts[1];
+                    
+                    // Extract hour from the time part (HH:MM:SS format)
+                    const hourStr = timePart.split(':')[0];
+                    const requestHour = parseInt(hourStr, 10);
+                    
+                    // Debug logging
+                    console.log('Request Limit Check (Hour-based):', {
+                        request_schedule: request.schedule,
+                        date_part: datePart,
+                        time_part: timePart,
+                        request_hour: requestHour,
+                        target_hour: hour,
+                        date_match: datePart === date,
+                        hour_match: requestHour === hour,
+                        is_match: datePart === date && requestHour === hour
+                    });
+                    
+                    // Check if it's the same date and hour (entire hour range)
+                    return datePart === date && requestHour === hour;
+                });
+                
+                const count = requestsInHour.length;
+                const limit = 5; // Set limit to 5 requests per hour
+                const isFull = count >= limit;
+                
+                const result = { count, limit, isFull };
+                
+                // Cache the result using hour-based key
+                requestLimitCache.set(cacheKey, {
+                    data: result,
+                    timestamp: Date.now()
+                });
+                
+                return result;
+            } catch (error) {
+                console.error('Error checking request limit:', error);
+                return { count: 0, limit: 5, isFull: false };
+            }
+        }
+
+        // Function to clear cache when needed
+        function clearRequestLimitCache() {
+            requestLimitCache.clear();
+        }
+
+        // Function to refresh request limits
+        async function refreshRequestLimits() {
+            const date = window.selectedDate;
+            if (!date) return;
+            
+            console.log('Refreshing request limits for date:', date);
+            
+            // Clear cache for this date
+            for (const [key, value] of requestLimitCache.entries()) {
+                if (key.startsWith(date)) {
+                    requestLimitCache.delete(key);
+                }
+            }
+            
+            // Show loading state
+            const refreshBtn = document.getElementById('refresh-limits-btn');
+            if (refreshBtn) {
+                refreshBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                refreshBtn.disabled = true;
+            }
+            
+            // Reload limits
+            await preloadRequestLimits(date);
+            
+            // Reset button
+            if (refreshBtn) {
+                refreshBtn.innerHTML = '<i class="fas fa-sync-alt"></i>';
+                refreshBtn.disabled = false;
+            }
+            
+            console.log('Request limits refreshed');
+        }
+
+        // Function to update cache when a new request is submitted
+        function updateCacheForNewRequest(date, time) {
+            const timeParts = time.split(':');
+            const hour = parseInt(timeParts[0]);
+            const minute = parseInt(timeParts[1]);
+            
+            const cacheKey = `${date}-${hour}-${minute}`;
+            const cached = requestLimitCache.get(cacheKey);
+            
+            if (cached) {
+                const newCount = cached.data.count + 1;
+                const isFull = newCount >= cached.data.limit;
+                
+                requestLimitCache.set(cacheKey, {
+                    data: {
+                        count: newCount,
+                        limit: cached.data.limit,
+                        isFull: isFull
+                    },
+                    timestamp: Date.now()
+                });
+                
+                // Update the UI immediately
+                updateTimePickerWithCachedLimits(date);
+                updateTimeSlotInfo();
+            }
+        }
+
+        // Function to manually test request limits (for debugging)
+        async function testRequestLimitForTime(date, hour, minute) {
+            console.log(`Testing request limit for ${date} ${hour}:${minute}`);
+            const result = await checkRequestLimit(date, hour, minute);
+            console.log('Request limit result:', result);
+            return result;
+        }
+
+        // Function to clear cache and reload for debugging
+        async function clearCacheAndReload() {
+            console.log('Clearing request limit cache...');
+            clearRequestLimitCache();
+            
+            const date = window.selectedDate;
+            if (date) {
+                console.log('Reloading limits for date:', date);
+                await preloadRequestLimits(date);
+            }
+        }
+
+        // Function to handle real-time updates
+        function setupRealTimeUpdates() {
+            // Listen for custom events when requests are submitted
+            document.addEventListener('requestSubmitted', function(event) {
+                const { date, time } = event.detail;
+                updateCacheForNewRequest(date, time);
+            });
+            
+            // Auto-refresh cache every 30 seconds
+            setInterval(() => {
+                const timeModal = document.getElementById('time-modal');
+                if (timeModal.classList.contains('visible') && window.selectedDate) {
+                    refreshRequestLimits();
+                }
+            }, 30000);
+        }
+
+        // Function to preload request limits for a date
+        async function preloadRequestLimits(date) {
+            const token = localStorage.getItem('userToken');
+            if (!token) return;
+            
+            try {
+                // Show loading indicator
+                showTimePickerLoading(true);
+                
+                const response = await fetch(`${baseUrl}/api/user/requests`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Server responded with ${response.status}`);
+                }
+                
+                const requests = await response.json();
+                
+                // Filter requests for the selected date
+                const dateRequests = requests.filter(request => {
+                    if (!request.schedule) return false;
+                    const requestDate = request.schedule.split('T')[0];
+                    return requestDate === date;
+                });
+                
+                // Preload cache for all hours (7 AM to 5 PM) using hour-based logic
+                for (let hour = 7; hour <= 17; hour++) {
+                    const requestsInHour = dateRequests.filter(request => {
+                        if (!request.schedule) return false;
+                        
+                        // Parse the schedule string directly to avoid timezone issues
+                        const scheduleParts = request.schedule.split('T');
+                        const datePart = scheduleParts[0];
+                        const timePart = scheduleParts[1];
+                        
+                        // Extract hour from the time part (HH:MM:SS format)
+                        const hourStr = timePart.split(':')[0];
+                        const requestHour = parseInt(hourStr, 10);
+                        
+                        // Check if it's the same date and hour (entire hour range)
+                        return datePart === date && requestHour === hour;
+                    });
+                    
+                    const count = requestsInHour.length;
+                    const limit = 5;
+                    const isFull = count >= limit;
+                    
+                    const cacheKey = `${date}-${hour}-hour`;
+                    requestLimitCache.set(cacheKey, {
+                        data: { count, limit, isFull },
+                        timestamp: Date.now()
+                    });
+                }
+                
+                // Hide loading indicator
+                showTimePickerLoading(false);
+                
+                // Update the time picker with cached data
+                updateTimePickerWithCachedLimits(date);
+                
+            } catch (error) {
+                console.error('Error preloading request limits:', error);
+                showTimePickerLoading(false);
+            }
+        }
+
+        // Function to show/hide loading indicator
+        function showTimePickerLoading(show) {
+            const timeModal = document.getElementById('time-modal');
+            let loadingIndicator = timeModal.querySelector('.time-picker-loading');
+            
+            if (show) {
+                if (!loadingIndicator) {
+                    loadingIndicator = document.createElement('div');
+                    loadingIndicator.className = 'time-picker-loading';
+                    loadingIndicator.innerHTML = `
+                        <div style="text-align: center; padding: 20px;">
+                            <div style="display: inline-block; width: 20px; height: 20px; border: 2px solid #50c6d8; border-radius: 50%; border-top-color: transparent; animation: spin 1s linear infinite;"></div>
+                            <div style="margin-top: 10px; color: #50c6d8; font-size: 12px;">Loading availability...</div>
+                        </div>
+                    `;
+                    timeModal.querySelector('.modal-content').insertBefore(loadingIndicator, timeModal.querySelector('.time-picker'));
+                }
+                loadingIndicator.style.display = 'block';
+            } else {
+                if (loadingIndicator) {
+                    loadingIndicator.style.display = 'none';
+                }
+            }
+        }
+
+        // Function to update minute limits when hour is selected (using hour-based cached data)
+        async function updateMinuteLimitsForHour(hourItem) {
+            const minuteWheel = document.getElementById('minute-wheel');
+            const minuteItems = minuteWheel.querySelectorAll('.time-picker-item');
+            const date = window.selectedDate;
+            
+            if (!date) return;
+            
+            const hour = parseInt(hourItem.getAttribute('data-value'));
+            const ampm = hourItem.getAttribute('data-ampm');
+            
+            // Convert to 24-hour format for API
+            let hour24 = hour;
+            if (ampm === 'PM' && hour24 < 12) {
+                hour24 += 12;
+            } else if (ampm === 'AM' && hour24 === 12) {
+                hour24 = 0;
+            }
+            
+            // Get hour-based limit data
+            const cacheKey = `${date}-${hour24}-hour`;
+            const cached = requestLimitCache.get(cacheKey);
+            
+                            // Apply the same limit status to all minutes in this hour
+                for (const minuteItem of minuteItems) {
+                    // Update minute item styling
+                    minuteItem.classList.remove('full', 'disabled');
+                    if (cached && cached.data.isFull) {
+                        minuteItem.classList.add('full');
+                        minuteItem.title = `${cached.data.count}/${cached.data.limit} requests`;
+                    }
+                }
+            
+            // Update time slot info
+            updateTimeSlotInfo();
+        }
+
+        // Function to update time slot info display (using hour-based cached data)
+        async function updateTimeSlotInfo() {
+            const selectedTime = getSelectedTime();
+            const timeSlotInfo = document.getElementById('time-slot-info');
+            const timeSlotStatus = document.getElementById('time-slot-status');
+            
+            if (!selectedTime) {
+                timeSlotInfo.style.display = 'none';
+                return;
+            }
+            
+            const date = window.selectedDate;
+            const timeParts = selectedTime.api.split(':');
+            const hour = parseInt(timeParts[0]);
+            const minute = parseInt(timeParts[1]);
+            
+            // Use hour-based cached data if available, otherwise fetch
+            const cacheKey = `${date}-${hour}-hour`;
+            const cached = requestLimitCache.get(cacheKey);
+            let limitInfo;
+            
+            if (cached && (Date.now() - cached.timestamp) < CACHE_DURATION) {
+                limitInfo = cached.data;
+            } else {
+                limitInfo = await checkRequestLimit(date, hour, minute);
+            }
+            
+            timeSlotInfo.style.display = 'block';
+            
+            if (limitInfo.isFull) {
+                timeSlotInfo.style.background = 'rgba(255, 55, 66, 0.1)';
+                timeSlotInfo.style.borderLeft = '3px solid #ff3742';
+                timeSlotStatus.style.color = '#ff3742';
+                timeSlotStatus.innerHTML = `<i class="fas fa-times-circle"></i> ${limitInfo.count}/${limitInfo.limit} requests`;
+            } else {
+                timeSlotInfo.style.background = 'rgba(80, 198, 216, 0.1)';
+                timeSlotInfo.style.borderLeft = '3px solid #50c6d8';
+                timeSlotStatus.style.color = '#50c6d8';
+                timeSlotStatus.innerHTML = `<i class="fas fa-check-circle"></i> ${limitInfo.count}/${limitInfo.limit} requests`;
+            }
+        }
+
+        // Function to update time picker with hour-based cached limits
+        function updateTimePickerWithCachedLimits(date) {
+            const hourWheel = document.getElementById('hour-wheel');
+            const minuteWheel = document.getElementById('minute-wheel');
+            
+            // Get all hour and minute items
+            const hourItems = hourWheel.querySelectorAll('.time-picker-item');
+            const minuteItems = minuteWheel.querySelectorAll('.time-picker-item');
+            
+            // Check limits for each hour using hour-based cached data
+            for (const hourItem of hourItems) {
+                const hour = parseInt(hourItem.getAttribute('data-value'));
+                const ampm = hourItem.getAttribute('data-ampm');
+                
+                // Convert to 24-hour format for API
+                let hour24 = hour;
+                if (ampm === 'PM' && hour24 < 12) {
+                    hour24 += 12;
+                } else if (ampm === 'AM' && hour24 === 12) {
+                    hour24 = 0;
+                }
+                
+                // Check if this hour is full using hour-based cache
+                const cacheKey = `${date}-${hour24}-hour`;
+                const cached = requestLimitCache.get(cacheKey);
+                
+                // Update hour item styling
+                hourItem.classList.remove('full', 'disabled');
+                if (cached && cached.data.isFull) {
+                    hourItem.classList.add('full');
+                    hourItem.title = `${cached.data.count}/${cached.data.limit} requests`;
+                }
+            }
+            
+            // Apply hour-based limits to all minutes in the selected hour
+            const selectedHour = hourWheel.querySelector('.time-picker-item.selected');
+            if (selectedHour) {
+                const hour = parseInt(selectedHour.getAttribute('data-value'));
+                const ampm = selectedHour.getAttribute('data-ampm');
+                
+                // Convert to 24-hour format for API
+                let hour24 = hour;
+                if (ampm === 'PM' && hour24 < 12) {
+                    hour24 += 12;
+                } else if (ampm === 'AM' && hour24 === 12) {
+                    hour24 = 0;
+                }
+                
+                // Get hour-based limit data
+                const hourCacheKey = `${date}-${hour24}-hour`;
+                const hourCached = requestLimitCache.get(hourCacheKey);
+                
+                // Apply the same limit status to all minutes in this hour
+                for (const minuteItem of minuteItems) {
+                    // Update minute item styling
+                    minuteItem.classList.remove('full', 'disabled');
+                    if (hourCached && hourCached.data.isFull) {
+                        minuteItem.classList.add('full');
+                        minuteItem.title = `${hourCached.data.count}/${hourCached.data.limit} requests`;
+                    }
+                }
+            }
+        }
+
+        // Function to update time picker with request limits (legacy - for fallback)
+        async function updateTimePickerWithLimits(date) {
+            const hourWheel = document.getElementById('hour-wheel');
+            const minuteWheel = document.getElementById('minute-wheel');
+            
+            // Get all hour and minute items
+            const hourItems = hourWheel.querySelectorAll('.time-picker-item');
+            const minuteItems = minuteWheel.querySelectorAll('.time-picker-item');
+            
+            // Check limits for each hour
+            for (const hourItem of hourItems) {
+                const hour = parseInt(hourItem.getAttribute('data-value'));
+                const ampm = hourItem.getAttribute('data-ampm');
+                
+                // Convert to 24-hour format for API
+                let hour24 = hour;
+                if (ampm === 'PM' && hour24 < 12) {
+                    hour24 += 12;
+                } else if (ampm === 'AM' && hour24 === 12) {
+                    hour24 = 0;
+                }
+                
+                // Check if this hour is full (any minute in this hour)
+                let isHourFull = false;
+                for (const minuteItem of minuteItems) {
+                    const minute = parseInt(minuteItem.getAttribute('data-value'));
+                    const limitInfo = await checkRequestLimit(date, hour24, minute);
+                    if (limitInfo.isFull) {
+                        isHourFull = true;
+                        break;
+                    }
+                }
+                
+                // Update hour item styling
+                hourItem.classList.remove('full', 'disabled');
+                if (isHourFull) {
+                    hourItem.classList.add('full');
+                    hourItem.title = 'This time slot is full (5 requests limit)';
+                }
+            }
+            
+            // Check limits for each minute
+            const selectedHour = hourWheel.querySelector('.time-picker-item.selected');
+            if (selectedHour) {
+                const hour = parseInt(selectedHour.getAttribute('data-value'));
+                const ampm = selectedHour.getAttribute('data-ampm');
+                
+                // Convert to 24-hour format for API
+                let hour24 = hour;
+                if (ampm === 'PM' && hour24 < 12) {
+                    hour24 += 12;
+                } else if (ampm === 'AM' && hour24 === 12) {
+                    hour24 = 0;
+                }
+                
+                for (const minuteItem of minuteItems) {
+                    const minute = parseInt(minuteItem.getAttribute('data-value'));
+                    const limitInfo = await checkRequestLimit(date, hour24, minute);
+                    
+                    // Update minute item styling
+                    minuteItem.classList.remove('full', 'disabled');
+                    if (limitInfo.isFull) {
+                        minuteItem.classList.add('full');
+                        minuteItem.title = `This time slot is full (${limitInfo.count}/${limitInfo.limit} requests)`;
+                    }
+                }
+            }
+        }
+
+        // Function to show time selection modal with AJAX loading
+        async function showTimeModal(date) {
+            window.selectedDate = date;
+            document.getElementById('selected-date-display').textContent = `Date: ${date}`;
+            
+            // Initialize the wheels if not already done
+            if (!timePickerInitialized) {
+                const hourWheel = document.getElementById('hour-wheel');
+                const minuteWheel = document.getElementById('minute-wheel');
+                
+                // Default to 8:00 AM
+                initTimeWheel(hourWheel, '8');
+                initTimeWheel(minuteWheel, '00');
+                timePickerInitialized = true;
+            }
+            
+            // Show modal first
+            document.getElementById('time-modal').classList.add('visible');
+            
+            // Preload request limits with AJAX
+            await preloadRequestLimits(date);
+        }
+        
+        // Function to hide time selection modal
+        function hideTimeModal() {
+            document.getElementById('time-modal').classList.remove('visible');
+        }
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            // Tutorial will be handled by the tutorial.js module
+            
+            // Load user data from API if token exists
+            const token = localStorage.getItem('userToken');
+            if (token) {
+                fetch(`${baseUrl}/api/user_profile`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                })
+                .then(res => {
+                    if (!res.ok) {
+                        throw new Error(`Failed to fetch user data: ${res.status}`);
+                    }
+                    return res.json();
+                })
+                .then(data => {
+                    // Store user data in localStorage
+                    localStorage.setItem('userData', JSON.stringify(data));
+                    
+                    // Check if user has priority status
+                    checkPriorityStatus();
+                })
+                .catch(err => {
+                    console.error('Error fetching user profile:', err);
+                });
+            }
+            
+            // Function to check if user has priority status
+            function checkPriorityStatus() {
+                const token = localStorage.getItem('userToken');
+                if (!token) return;
+                
+                fetch(`${baseUrl}/api/check_priority_status`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                })
+                .then(res => res.json())
+                .then(data => {
+                    // Hide priority button if user is not a priority user
+                    const priorityBtn = document.getElementById('priority-btn');
+                    if (priorityBtn && !data.is_priority) {
+                        priorityBtn.style.display = 'none';
+                    }
+                })
+                .catch(err => {
+                    console.error('Error checking priority status:', err);
+                });
+            }
+            
+            // Example: Check for notifications (in a real app, this would call an API)
+            function checkNotifications() {
+                // Simulate fetching notifications
+                // In a real app, this would be an API call
+                setTimeout(() => {
+                    // Random number between 0 and 5 for demo purposes
+                    const notificationCount = Math.floor(Math.random() * 6);
+                    // Check if function exists before calling it
+                    if (typeof updateNotificationBadge === 'function') {
+                        updateNotificationBadge(notificationCount);
+                    }
+                }, 2000);
+            }
+            
+            // Call once on page load after a delay to ensure notification.js is loaded
+            setTimeout(checkNotifications, 2000);
+            
+            // Settings functionality moved to settings.js
+            
+            // Notification functionality moved to notification.js
+            
+            // Make sure notification system is initialized
+            if (typeof initNotifications === 'function') {
+                initNotifications();
+            }
+            
+            // Setup real-time updates for request limits
+            setupRealTimeUpdates();
+            
+            // Close wave profile form
+            document.getElementById('wave-close-profile-btn').addEventListener('click', function() {
+                // Close the wave expanded state
+                document.body.classList.remove('wave-expanded');
+                        // Re-enable scrolling
+                        document.body.style.overflow = '';
+            });
+            
+            // Handle wave profile form submission
+            document.getElementById('wave-profile-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                // Validate matching fields
+                const password = document.getElementById('wave-password').value;
+                const confirmPassword = document.getElementById('wave-confirm-password').value;
+                
+                // Get the message box
+                const msgBox = document.getElementById('wave-profile-message');
+                msgBox.className = 'message';
+                msgBox.style.display = 'block';
+                
+                // Check if passwords match
+                if (password !== confirmPassword) {
+                    msgBox.className = 'message error';
+                    msgBox.innerHTML = '<i class="fas fa-exclamation-circle"></i> Passwords do not match';
+                    return;
+                }   
+                
+                // Everything is valid, proceed with update
+                updateProfile('wave');
+            });
+            
+            // Handle wave logout
+            document.getElementById('wave-logout-btn').addEventListener('click', function() {
+                // Clear local storage
+                localStorage.removeItem('userToken');
+                localStorage.removeItem('userData');
+                
+                // Redirect to login page
+                window.location.href = 'auth.html';
+            });
+            
+            // Auto capitalize name fields
+            function autoCapitalize(inputElement) {
+                if (!inputElement.value) return;
+                
+                if (inputElement.id === 'wave-middleinitial') {
+                    // For middle initial, capitalize the entire input since it's usually just 1-2 characters
+                    inputElement.value = inputElement.value.toUpperCase();
+                } else {
+                    // For names, capitalize first letter only
+                    inputElement.value = inputElement.value.charAt(0).toUpperCase() + 
+                                        inputElement.value.slice(1);
+                }
+            }
+            
+            // Add blur event listeners for name fields to auto-capitalize
+            document.getElementById('wave-firstname').addEventListener('blur', function() {
+                autoCapitalize(this);
+            });
+            
+            document.getElementById('wave-lastname').addEventListener('blur', function() {
+                autoCapitalize(this);
+            });
+            
+            document.getElementById('wave-middleinitial').addEventListener('blur', function() {
+                autoCapitalize(this);
+            });
+            
+            // Add input event listeners for real-time capitalization
+            document.getElementById('wave-firstname').addEventListener('input', function() {
+                if (this.value.length === 1) {
+                    autoCapitalize(this);
+                }
+            });
+            
+            document.getElementById('wave-lastname').addEventListener('input', function() {
+                if (this.value.length === 1) {
+                    autoCapitalize(this);
+                }
+            });
+            
+            document.getElementById('wave-middleinitial').addEventListener('input', function() {
+                autoCapitalize(this);
+            });
+            
+            // Handle input focus for better mobile experience
+            const formInputs = document.querySelectorAll('.wave-profile-form input');
+            formInputs.forEach(input => {
+                input.addEventListener('focus', function() {
+                    // On mobile, scroll the input into view with offset when focused
+                    if (window.innerHeight < 700) {
+                        // Short delay to allow keyboard to appear
+                        setTimeout(() => {
+                            this.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }, 300);
+                    }
+                });
+            });
+            
+            // Real-time validation for confirmation fields
+            function setupConfirmationValidation(originalId, confirmId) {
+                const originalInput = document.getElementById(originalId);
+                const confirmInput = document.getElementById(confirmId);
+                const parent = confirmInput.closest('.form-group');
+                const validIcon = parent.querySelector('.valid-icon');
+                const invalidIcon = parent.querySelector('.invalid-icon');
+                
+                confirmInput.addEventListener('input', validateConfirmation);
+                originalInput.addEventListener('input', () => {
+                    if (confirmInput.value) {
+                        validateConfirmation();
+                    }
+                });
+                
+                function validateConfirmation() {
+                    const isValid = originalInput.value && confirmInput.value && 
+                                    originalInput.value === confirmInput.value;
+                    
+                    // Reset
+                    parent.classList.remove('valid', 'invalid');
+                    validIcon.classList.add('hidden');
+                    invalidIcon.classList.add('hidden');
+                    
+                    // If confirmation field has a value, show validation
+                    if (confirmInput.value) {
+                        if (isValid) {
+                            parent.classList.add('valid');
+                            validIcon.classList.remove('hidden');
+                        } else {
+                            parent.classList.add('invalid');
+                            invalidIcon.classList.remove('hidden');
+                        }
+                    }
+                }
+            }
+            
+            // Set up validation for email and password confirmation fields
+            // setupConfirmationValidation('wave-email', 'wave-confirm-email');
+            setupConfirmationValidation('wave-password', 'wave-confirm-password');
+            
+            // Function to load profile data into either form
+            function loadProfileData(prefix) {
+                const token = localStorage.getItem('userToken');
+                if (token) {
+                    // Try to load user data from localStorage first
+                    const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+                    
+                    // Check if we have a full name that needs to be split
+                    if (userData.name && (!userData.firstname || !userData.lastname)) {
+                        // Split the name into components
+                        const nameParts = userData.name.trim().split(' ');
+                        if (nameParts.length >= 2) {
+                            userData.firstname = nameParts[0] || '';
+                            userData.lastname = nameParts[nameParts.length - 1] || '';
+                            
+                            // If there are more than 2 parts, the middle could be a middle initial or part of the last name
+                            if (nameParts.length > 2) {
+                                // Check if it looks like an initial (1-2 chars with a period)
+                                const middlePart = nameParts[1];
+                                if (middlePart.length <= 2 || middlePart.endsWith('.')) {
+                                    userData.middleinitial = middlePart.replace('.', '');
+                                }
+                            }
+                        } else {
+                            // Only one name part, set as first name
+                            userData.firstname = userData.name;
+                            userData.lastname = '';
+                        }
+                    }
+                    
+                    // Populate form with existing data if available
+                    document.getElementById(prefix + '-firstname').value = userData.firstname || '';
+                    document.getElementById(prefix + '-lastname').value = userData.lastname || '';
+                    document.getElementById(prefix + '-middleinitial').value = userData.middleinitial || '';
+                    
+                    // Set suffix if available
+                    const suffixSelect = document.getElementById(prefix + '-suffix');
+                    if (userData.suffix) {
+                        // Check if the suffix is a valid option
+                        const suffixExists = Array.from(suffixSelect.options).some(option => option.value === userData.suffix);
+                        if (suffixExists) {
+                            suffixSelect.value = userData.suffix;
+                        }
+                    } else {
+                        suffixSelect.selectedIndex = 0; // Set to "None"
+                    }
+                    
+                    document.getElementById(prefix + '-email').value = userData.email || '';
+                    document.getElementById(prefix + '-cell').value = userData.cell || '';
+                    document.getElementById(prefix + '-password').value = userData.password || '';
+                    document.getElementById(prefix + '-confirm-password').value = userData.password || ''; // Set same password in confirmation
+                    
+                    // Display read-only information
+                    document.getElementById(prefix + '-idno-display').textContent = userData.idno || '-';
+                    document.getElementById(prefix + '-level-display').textContent = userData.level || '-';
+                    
+                    // Show course or strand based on level
+                    let courseStrand = '-';
+                    if (userData.level === 'College') {
+                        courseStrand = userData.course || '-';
+                    } else if (userData.level === 'SHS') {
+                        courseStrand = userData.strand || '-';
+                    }
+                    document.getElementById(prefix + '-course-display').textContent = courseStrand;
+                }
+            }
+            
+            // Function to update profile from either form
+            function updateProfile(prefix) {
+                const token = localStorage.getItem('userToken');
+                if (!token) {
+                    return;
+                }
+                
+                const firstname = document.getElementById(prefix + '-firstname').value;
+                const lastname = document.getElementById(prefix + '-lastname').value;
+                const middleinitial = document.getElementById(prefix + '-middleinitial').value;
+                const suffix = document.getElementById(prefix + '-suffix').value;
+                const email = document.getElementById(prefix + '-email').value;
+                const cell = document.getElementById(prefix + '-cell').value;
+                const password = document.getElementById(prefix + '-password').value;
+                
+                // Show loading message
+                const msgBox = document.getElementById(prefix + '-profile-message');
+                msgBox.className = 'message';
+                msgBox.style.display = 'block';
+                msgBox.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Updating profile...';
+                
+                // Get user ID from token (in a real app you'd decode the token)
+                const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+                
+                // Construct a formatted full name for compatibility with existing code
+                let fullName = firstname;
+                if (middleinitial) {
+                    fullName += ' ' + middleinitial + '.';
+                }
+                fullName += ' ' + lastname;
+                if (suffix) {
+                    fullName += ' ' + suffix;
+                }
+                
+                // Prepare data for API
+                const updatedData = {
+                    name: fullName,  // For backward compatibility
+                    firstname: firstname,
+                    lastname: lastname,
+                    middleinitial: middleinitial,
+                    suffix: suffix,
+                    email: email,
+                    cell: cell,
+                    password: password
+                };
+                
+                // Send update to server
+                fetch(`${baseUrl}/api/update_profile`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(updatedData)
+                })
+                .then(res => {
+                    if (!res.ok) {
+                        return res.json().then(data => {
+                            throw new Error(data.error || `Server responded with ${res.status}`);
+                        });
+                    }
+                    return res.json();
+                })
+                .then(data => {
+                    // Update local storage with new data
+                    const mergedData = {...userData, ...updatedData}; 
+                    localStorage.setItem('userData', JSON.stringify(mergedData));
+                    
+                    // Show success message
+                    msgBox.className = 'message success';
+                    msgBox.innerHTML = '<i class="fas fa-check-circle"></i> Profile updated successfully!';
+                    
+                    // Close wave after a delay if that's what we're updating
+                    setTimeout(() => {
+                        document.body.classList.remove('wave-expanded');
+                        // Re-enable scrolling
+                        document.body.style.overflow = '';
+                    }, 1500);
+                })
+                .catch(err => {
+                    console.error('Profile update error:', err);
+                    
+                    // For now, still update local storage since the API endpoint doesn't exist yet
+                    const mergedData = {...userData, ...updatedData}; 
+                    localStorage.setItem('userData', JSON.stringify(mergedData));
+                    
+                    // Show success message anyway (for demo purposes)
+                    msgBox.className = 'message success';
+                    msgBox.innerHTML = '<i class="fas fa-check-circle"></i> Profile updated locally!';
+                    
+                    // Close wave after a delay if that's what we're updating
+                    setTimeout(() => {
+                        document.body.classList.remove('wave-expanded');
+                        // Re-enable scrolling
+                        document.body.style.overflow = '';
+                    }, 1500);
+                });
+            }
+            
+            // Calendar will be initialized only when needed
+            
+            // Function to check if user has existing requests
+            function checkExistingRequests() {
+                const token = localStorage.getItem('userToken');
+                if (!token) {
+                    console.log('No token found, redirecting to login page');
+                    window.location.href = 'auth.html';
+                    return Promise.resolve(false);
+                }
+                
+                // First check if we already have the request in localStorage (from notification system)
+                const storedRequest = localStorage.getItem('userCurrentRequest');
+                if (storedRequest) {
+                    try {
+                        const parsedRequest = JSON.parse(storedRequest);
+                        console.log('Using stored request from localStorage:', parsedRequest);
+                        return Promise.resolve(parsedRequest);
+                    } catch (e) {
+                        console.error('Error parsing stored request:', e);
+                        // Continue with API call if parsing fails
+                    }
+                }
+                
+                // Use the new combined endpoint for notifications and own requests
+                return fetch(`${baseUrl}/api/user/notifications`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Server responded with ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // The new endpoint returns has_own_request flag and own_request object
+                    if (data.has_own_request === true && data.own_request) {
+                        // User has an existing request - return the request data
+                        console.log('Found existing request:', data.own_request);
+                        
+                        // Store for future use
+                        localStorage.setItem('userCurrentRequest', JSON.stringify(data.own_request));
+                        
+                        return data.own_request;
+                    }
+                    
+                    // No existing requests
+                    console.log('No existing requests found');
+                    localStorage.removeItem('userCurrentRequest');
+                    return false;
+                })
+                .catch(error => {
+                    console.error('Error checking existing requests:', error);
+                    // Fallback to the dedicated endpoint if the combined one fails
+                    return fetchExistingRequestsFromDedicatedEndpoint();
+                });
+            }
+            
+            // Fallback to the dedicated endpoint for checking own requests
+            function fetchExistingRequestsFromDedicatedEndpoint() {
+                console.log('Using dedicated endpoint to check for existing requests');
+                const token = localStorage.getItem('userToken');
+                if (!token) {
+                    return Promise.resolve(false);
+                }
+                
+                return fetch(`${baseUrl}/api/user/check_own_request`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Server responded with ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // The dedicated endpoint returns a single object with has_request flag
+                    if (data.has_request === true) {
+                        console.log('Found existing request using dedicated endpoint:', data);
+                        
+                        // Store for future use
+                        localStorage.setItem('userCurrentRequest', JSON.stringify(data));
+                        
+                        return data;
+                    }
+                    
+                    console.log('No existing requests found using dedicated endpoint');
+                    localStorage.removeItem('userCurrentRequest');
+                    return false;
+                })
+                .catch(error => {
+                    console.error('Error in dedicated endpoint check:', error);
+                    // Final fallback to the legacy method
+                    return fetchExistingRequestsLegacy();
+                });
+            }
+            
+            // Legacy fallback method for checking existing requests
+            function fetchExistingRequestsLegacy() {
+                console.log('Using legacy method to check for existing requests');
+                const token = localStorage.getItem('userToken');
+                if (!token) {
+                    return Promise.resolve(false);
+                }
+                
+                return fetch(`${baseUrl}/api/user/requests`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Server responded with ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Find the user's own requests (pending or oncall)
+                    const userRequests = data.filter(req => 
+                        (req.is_current_user === true || req.idno === JSON.parse(localStorage.getItem('userData') || '{}').idno) && 
+                        (req.status === 'pending' || req.status === 'oncall')
+                    );
+                    
+                    if (userRequests.length > 0) {
+                        // User has an existing request - return the most recent one
+                        console.log('Found existing request using legacy method:', userRequests[0]);
+                        return userRequests[0];
+                    }
+                    
+                    // No existing requests
+                    console.log('No existing requests found using legacy method');
+                    return false;
+                })
+                .catch(error => {
+                    console.error('Error in legacy check for existing requests:', error);
+                    return false;
+                });
+            }
+
+            // Function to show receipt for existing request
+            function showExistingRequestReceipt(request, fromQueueNow = false) {
+                // Set global variables to match the existing request
+                window.selectedLevel = request.level || 'College';
+                window.selectedType = request.payment?.toUpperCase() || 'REGULAR';
+                window.selectedDate = request.schedule ? new Date(request.schedule).toISOString().split('T')[0] : new Date().toISOString().split('T')[0];
+                
+                // Format time
+                let timeStr = '12:00';
+                if (request.schedule) {
+                    const scheduleDate = new Date(request.schedule);
+                    timeStr = scheduleDate.getHours().toString().padStart(2, '0') + ':' + 
+                             scheduleDate.getMinutes().toString().padStart(2, '0');
+                }
+                window.selectedTime = timeStr;
+                
+                // Create request data object for the receipt
+                const existingRequest = {
+                    request_id: request.request_id,
+                    date: window.selectedDate,
+                    time: window.selectedTime,
+                    level: window.selectedLevel,
+                    type: window.selectedType?.toLowerCase() || 'regular',
+                    payment: window.selectedType?.toLowerCase() || 'regular',
+                    method: request.method || 'full',
+                    timestamp: new Date().toISOString(),
+                    status: request.status,
+                    fromQueueNow: fromQueueNow // Flag to indicate this came from Queue Now button
+                };
+                
+                // Use receipt module to display the receipt
+                receiptModule.currentRequest = existingRequest;
+                receiptModule.generateReceipt(existingRequest);
+                
+                // Show message that this is an existing request
+                const receiptBody = document.querySelector('.receipt-body');
+                if (receiptBody) {
+                    const existingMsg = document.createElement('div');
+                    existingMsg.className = 'receipt-info';
+                    existingMsg.innerHTML = `<i class="fas fa-info-circle"></i> This is your existing ${request.status === 'oncall' ? 'on-call' : 'pending'} request.`;
+                    existingMsg.style.cssText = 'color: #0066cc; background-color: #e6f2ff; padding: 10px; margin: 10px 0; border-radius: 5px; text-align: center;';
+                    receiptBody.appendChild(existingMsg);
+                }
+            }
+
+            // Queue Now Button Event
+            document.getElementById('queue-now-btn').addEventListener('click', function() {
+                // Check if user already has a request
+                checkExistingRequests().then(existingRequest => {
+                    if (existingRequest) {
+                        // User has an existing request - show receipt for it
+                        // Pass true to indicate this came from the Queue Now button
+                        showExistingRequestReceipt(existingRequest, true);
+                    } else {
+                        // No existing request - proceed as normal
+                        document.getElementById('queue-now-container').classList.add('hidden');
+                        showSection('main-options');
+                    }
+                });
+            });
+            
+            // Wave animation script
+            (function() {
+                // Variables
+                var $curve = document.getElementById("curve");
+                var last_known_scroll_position = 0;
+                var defaultCurveValue = 550;
+                var curveRate = 3;
+                var ticking = false;
+                var curveValue;
+              
+                // Handle the functionality
+                function scrollEvent(scrollPos) {
+                  if (scrollPos >= 0 && scrollPos < defaultCurveValue) {
+                    curveValue = defaultCurveValue - parseFloat(scrollPos / curveRate);
+                    $curve.setAttribute(
+                      "d",
+                      "M 800 500 Q 400 " + curveValue + " 0 500 L 0 0 L 800 0 L 800 500 Z"
+                    );
+                  }
+                }
+              
+                // Scroll Listener
+                window.addEventListener("scroll", function(e) {
+                  last_known_scroll_position = window.scrollY;
+              
+                  if (!ticking) {
+                    window.requestAnimationFrame(function() {
+                      scrollEvent(last_known_scroll_position);
+                      ticking = false;
+                    });
+                  }
+              
+                  ticking = true;
+                });
+            })();
+            
+            // Auto-login for testing purposes
+            if (!localStorage.getItem('userToken')) {
+                localStorage.setItem('userToken', 'test-token');
+            }
+            
+            // Main options buttons
+            document.getElementById('queue-btn').addEventListener('click', function() {
+                // Simply go to queue options
+                proceedToQueueOptions();
+            });
+            
+            // Helper function to proceed to queue options
+            function proceedToQueueOptions() {
+                // Set the flow to queue mode (not appointment)
+                window.isAppointmentFlow = false;
+                
+                // Set current date and time automatically for the queue
+                const now = new Date();
+                const year = now.getFullYear();
+                const month = String(now.getMonth() + 1).padStart(2, '0');
+                const day = String(now.getDate()).padStart(2, '0');
+                const hours = String(now.getHours()).padStart(2, '0');
+                const minutes = String(now.getMinutes()).padStart(2, '0');
+                
+                // Set current date and time for display and API
+                window.selectedDate = `${year}-${month}-${day}`;
+                window.selectedTime = `${hours}:${minutes}`;
+                
+                // Format for display (12-hour format)
+                let hour12 = hours % 12;
+                if (hour12 === 0) hour12 = 12;
+                const ampm = hours >= 12 ? 'PM' : 'AM';
+                window.selectedTimeDisplay = `${hour12}:${minutes} ${ampm}`;
+
+                // Go to queue options
+                showSection('queue-options');
+            }
+            
+            document.getElementById('appointment-btn').addEventListener('click', function() {
+                // Simply go to appointment flow
+                proceedToAppointment();
+            });
+            
+            // Helper function to proceed to appointment
+            function proceedToAppointment() {
+                // Set the flow to appointment mode
+                window.isAppointmentFlow = true;
+                
+                // Hide main options
+                document.getElementById('main-options').classList.add('hidden');
+                
+                // Show the calendar section
+                const calendarSection = document.getElementById('top-calendar-section');
+                calendarSection.classList.remove('hidden');
+                
+                // Initialize calendar if not already done
+                if (!window.topCalendar) {
+                    initializeCalendar();
+                }
+                
+                // Add back button to calendar section if not already there
+                if (!document.getElementById('calendar-back-btn')) {
+                    const backBtn = document.createElement('button');
+                    backBtn.id = 'calendar-back-btn';
+                    backBtn.className = 'btn back-btn';
+                    backBtn.innerHTML = '<i class="fas fa-arrow-left"></i> Back';
+                    backBtn.addEventListener('click', function() {
+                        // Hide calendar section
+                        document.getElementById('top-calendar-section').classList.add('hidden');
+                        // Show main options
+                        showSection('main-options');
+                    });
+                    calendarSection.appendChild(backBtn);
+                }
+            }
+            
+            // Queue options buttons
+            document.getElementById('shs-btn').addEventListener('click', function() {
+                // Set selection
+                window.selectedLevel = 'SHS';
+                
+                // Go directly to next screen
+                showSection('service-options');
+            });
+            
+            document.getElementById('college-btn').addEventListener('click', function() {
+                // Set selection
+                window.selectedLevel = 'College';
+                
+                // Go directly to next screen
+                showSection('service-options');
+            });
+            
+            // Service options buttons
+            document.getElementById('express-btn').addEventListener('click', function() {
+                // Set selection
+                window.selectedType = 'EXPRESS';
+                
+                // Go directly to next screen
+                showSection('payment-options');
+            });
+            
+            document.getElementById('regular-btn').addEventListener('click', function() {
+                // Set selection
+                window.selectedType = 'REGULAR';
+                
+                // Go directly to next screen
+                showSection('payment-options');
+            });
+            
+            document.getElementById('priority-btn').addEventListener('click', function() {
+                // Set selection
+                window.selectedType = 'PRIORITY';
+                
+                // Go directly to next screen
+                showSection('payment-options');
+            });
+            
+            // Payment options buttons
+            document.getElementById('full-payment-btn').addEventListener('click', function() {
+                // Set selection
+                window.selectedPayment = 'Full Payment';
+                
+                // Submit appointment
+                handlePayment('Full Payment');
+            });
+            
+            document.getElementById('installment-btn').addEventListener('click', function() {
+                // Set selection
+                window.selectedPayment = 'Installment';
+                
+                // Submit appointment
+                handlePayment('Installment');
+            });
+            
+            // Back buttons
+            const backButtons = document.querySelectorAll('.back-btn');
+            backButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const parentId = this.parentElement.id;
+                    
+                    if (parentId === 'main-options') {
+                        // Show the queue now button
+                        document.getElementById('queue-now-container').classList.remove('hidden');
+                        document.getElementById('main-options').classList.add('hidden');
+                    } else if (parentId === 'queue-options' || parentId === 'appointment-options') {
+                        showSection('main-options');
+                    } else if (parentId === 'service-options') {
+                        showSection('queue-options');
+                    } else if (parentId === 'payment-options') {
+                        showSection('service-options');
+                    }
+                });
+            });
+
+            // Time modal buttons
+            document.getElementById('confirm-time-btn').addEventListener('click', async function() {
+                const selectedTime = getSelectedTime();
+                if (!selectedTime) {
+                    // Show error without alert popup
+                    const timeModal = document.getElementById('time-modal');
+                    const errorMsg = document.createElement('div');
+                    errorMsg.className = 'time-error-message';
+                    errorMsg.textContent = 'Please select a valid time';
+                    errorMsg.style.cssText = 'color: red; text-align: center; margin-top: 10px;';
+                    
+                    // Remove any existing error message
+                    const existingError = timeModal.querySelector('.time-error-message');
+                    if (existingError) {
+                        existingError.remove();
+                    }
+                    
+                    // Add the error message to the modal
+                    timeModal.appendChild(errorMsg);
+                    
+                    // Remove the error message after 3 seconds
+                    setTimeout(() => {
+                        if (errorMsg.parentNode) {
+                            errorMsg.remove();
+                        }
+                    }, 3000);
+                    
+                    return;
+                }
+                
+                // Check if the selected hour is full
+                const date = window.selectedDate;
+                const timeParts = selectedTime.api.split(':');
+                const hour = parseInt(timeParts[0]);
+                const minute = parseInt(timeParts[1]);
+                
+                const limitInfo = await checkRequestLimit(date, hour, minute);
+                if (limitInfo.isFull) {
+                    // Show error for full hour but allow selection
+                    const timeModal = document.getElementById('time-modal');
+                    const errorMsg = document.createElement('div');
+                    errorMsg.className = 'time-error-message';
+                    //errorMsg.textContent = `This hour is full (${limitInfo.count}/${limitInfo.limit} requests). Please select a different hour.`;
+                    errorMsg.style.cssText = 'color: #ff3742; text-align: center; margin-top: 10px; font-weight: 600;';
+                    
+                    // Remove any existing error message
+                    const existingError = timeModal.querySelector('.time-error-message');
+                    if (existingError) {
+                        existingError.remove();
+                    }
+                    
+                    // Add the error message to the modal
+                    timeModal.appendChild(errorMsg);
+                    
+                    // Remove the error message after 5 seconds
+                    setTimeout(() => {
+                        if (errorMsg.parentNode) {
+                            errorMsg.remove();
+                        }
+                    }, 5000);
+                    
+                    return;
+                }
+                
+                // Store the selected time for API
+                window.selectedTime = selectedTime.api;
+                // Store formatted time for display
+                window.selectedTimeDisplay = selectedTime.display;
+                
+                // Hide the time modal
+                hideTimeModal();
+                
+                // Hide the calendar section
+                document.getElementById('top-calendar-section').classList.add('hidden');
+                
+                // Show the queue options (SHS or College) for both queue and appointment flows
+                showSection('queue-options');
+            });
+
+            document.getElementById('cancel-time-btn').addEventListener('click', function() {
+                // Just hide the time modal, keep the calendar visible
+                document.getElementById('time-modal').classList.remove('visible');
+            });
+
+            // Refresh limits button
+            document.getElementById('refresh-limits-btn').addEventListener('click', function() {
+                refreshRequestLimits();
+            });
+
+            // Debug limits button
+            document.getElementById('debug-limits-btn').addEventListener('click', function() {
+                const selectedTime = getSelectedTime();
+                if (selectedTime) {
+                    const date = window.selectedDate;
+                    const timeParts = selectedTime.api.split(':');
+                    const hour = parseInt(timeParts[0]);
+                    const minute = parseInt(timeParts[1]);
+                    
+                    testRequestLimitForTime(date, hour, minute).then(result => {
+                        console.log('Debug result for current hour:', result);
+                        alert(`Debug Info:\nDate: ${date}\nHour: ${hour}:00-${hour+1}:00\nCount: ${result.count}/${result.limit}\nIs Full: ${result.isFull}`);
+                    });
+                } else {
+                    alert('Please select a time first');
+                }
+            });
+        });
+        
+        // Function to show a specific section and hide others
+        function showSection(sectionId) {
+            const sections = [
+                'main-options',
+                'queue-options',
+                'service-options',
+                'payment-options',
+                'appointment-options'
+            ];
+            
+            // Hide all sections
+            sections.forEach(section => {
+                document.getElementById(section).classList.add('hidden');
+                document.getElementById(section).classList.remove('slide-up');
+            });
+            
+            // Show the requested section
+            document.getElementById(sectionId).classList.remove('hidden');
+            // Trigger reflow to restart animation
+            void document.getElementById(sectionId).offsetWidth;
+            document.getElementById(sectionId).classList.add('slide-up');
+            
+            // Update active states on buttons based on current section
+            updateActiveButtons(sectionId);
+        }
+        
+        // Make showSection available globally
+        window.showSection = showSection;
+        
+        // Function to update active state of buttons
+        function updateActiveButtons(currentSectionId) {
+            // Reset all buttons to default state
+            const allButtons = document.querySelectorAll('.btn');
+            allButtons.forEach(btn => {
+                btn.disabled = false;
+                btn.classList.remove('disabled');
+            });
+        }
+        
+        // Function to initialize calendar
+        function initializeCalendar() {
+            // Create a dynamic script element to load calendar.js
+            const script = document.createElement('script');
+            script.src = 'js/calendar.js';
+            script.onload = function() {
+                // Initialize calendar after script is loaded
+                window.topCalendar = new AppointmentCalendar('top-calendar-container', {
+                    onDateSelected: function(date) {
+                        // Show time selection modal when date is selected
+                        showTimeModal(date);
+                    }
+                });
+            };
+            document.head.appendChild(script);
+        }
+
+        // Payment handler
+        function handlePayment(paymentType) {
+            window.selectedPayment = paymentType;
+            showReceiptModal();
+        }
+
+        function showReceiptModal() {
+            // Simplified function - just go to main options
+            confirmAppointment();
+        }
+
+        // hideReceiptModal function removed
+
+        // Modal buttons removed
+
+        function confirmAppointment() {
+            // Simplified function - just return to main options without submitting
+            console.log('Appointment flow completed');
+            
+            // Return to main screen
+            showSection('main-options');
+        }
+
+        (function checkLoginStatus() {
+            // Simplified login check - just make sure there's a token
+            const token = localStorage.getItem('userToken');
+            
+            if (!token) {
+                console.log('No token found, redirecting to login page');
+                window.location.href = 'auth.html';
+                return;
+            }
+            
+            // Skip server verification - just continue with the app
+            console.log('User token found, continuing');
+        })();
+
+        function formatTimeForDisplay(timeString) {
+            if (!timeString) return '-';
+            
+            try {
+                const timeParts = timeString.split(':');
+                if (timeParts.length >= 2) {
+                    let hour = parseInt(timeParts[0]);
+                    const minutes = timeParts[1];
+                    const ampm = hour >= 12 ? 'PM' : 'AM';
+                    hour = hour % 12;
+                    if (hour === 0) hour = 12;
+                    return `${hour}:${minutes} ${ampm}`;
+                }
+                return timeString;
+            } catch (error) {
+                console.error('Error formatting time:', error);
+                return timeString || '-';
+            }
+        }
+        
+        // Helper function to format date from API format to display format
+        function formatDateForDisplay(dateString) {
+            if (!dateString) return '-';
+            
+            try {
+                const dateObj = new Date(dateString);
+                if (!isNaN(dateObj)) {
+                    const options = { year: 'numeric', month: 'long', day: 'numeric' };
+                    return dateObj.toLocaleDateString(undefined, options);
+                }
+                return dateString;
+            } catch (error) {
+                console.error('Error formatting date:', error);
+                return dateString || '-';
+            }
+        }
+        
+        // Scroll reveal functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const revealSections = document.querySelectorAll('.scroll-reveal-section');
+            let lastScrollTop = 0;
+            let ticking = false;
+            
+            // Throttle function to limit how often the scroll event fires
+            function throttleScroll() {
+                if (!ticking) {
+                    window.requestAnimationFrame(function() {
+                        checkScroll();
+                        ticking = false;
+                    });
+                }
+                ticking = true;
+            }
+            
+            function checkScroll() {
+                const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                const windowHeight = window.innerHeight;
+                
+                // Determine scroll direction
+                const scrollingDown = scrollTop > lastScrollTop;
+                lastScrollTop = scrollTop;
+                
+                // Only start revealing when user has scrolled past the main container
+                const mainContentHeight = document.querySelector('.container').offsetHeight;
+                const hasScrolledPastMainContent = scrollTop > (mainContentHeight - windowHeight);
+                
+                revealSections.forEach((section, index) => {
+                    const sectionTop = section.getBoundingClientRect().top;
+                    const sectionBottom = section.getBoundingClientRect().bottom;
+                    
+                    // Add a slight delay to each section for cascade effect
+                    const delay = index * 100;
+                    
+                    // Check if user has scrolled past main content and section is in viewport
+                    if (hasScrolledPastMainContent && sectionTop < windowHeight - 50) {
+                        // If scrolling down or section is already visible
+                        if (scrollingDown || section.classList.contains('visible')) {
+                            setTimeout(() => {
+                                section.classList.add('visible');
+                                section.classList.remove('hiding');
+                            }, scrollingDown ? delay : 0);
+                        }
+                    } else {
+                        // Section is out of viewport or user hasn't scrolled past main content
+                        if (!section.classList.contains('visible')) {
+                            section.classList.remove('visible');
+                        }
+                    }
+                    
+                    // If scrolling up and section is at the bottom of the viewport
+                    if (!scrollingDown && sectionBottom < 50) {
+                        section.classList.add('hiding');
+                        setTimeout(() => {
+                            if (section.classList.contains('hiding')) {
+                                section.classList.remove('visible');
+                            }
+                        }, 500); // Match the CSS transition time
+                    }
+                });
+            }
+            
+            // Initial check with a slight delay to allow page to settle
+            setTimeout(checkScroll, 300);
+            
+            // Add scroll event listener with throttling
+            window.addEventListener('scroll', throttleScroll, { passive: true });
+            
+            // Also check on window resize
+            window.addEventListener('resize', throttleScroll, { passive: true });
+        });
+
+        // Function to check for existing requests on page load
+        function checkExistingRequestsOnLoad() {
+            // Only check if user is logged in
+            const token = localStorage.getItem('userToken');
+            if (!token) {
+                return;
+            }
+            
+            // First check if we already have the request in localStorage
+            const storedRequest = localStorage.getItem('userCurrentRequest');
+            if (storedRequest) {
+                try {
+                    const parsedRequest = JSON.parse(storedRequest);
+                    console.log('Using stored request from localStorage for banner:', parsedRequest);
+                    showRequestBanner(parsedRequest);
+                    return; // Exit early since we found a request
+                } catch (e) {
+                    console.error('Error parsing stored request for banner:', e);
+                    // Continue with API call if parsing fails
+                }
+            }
+            
+            // Use the combined endpoint for checking requests
+            fetch(`${baseUrl}/api/user/notifications`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Server responded with ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Check if user has a request
+                if (data.has_own_request === true && data.own_request) {
+                    // Store for future use
+                    localStorage.setItem('userCurrentRequest', JSON.stringify(data.own_request));
+                    
+                    showRequestBanner(data.own_request);
+                } else {
+                    console.log('No existing requests found on page load');
+                    localStorage.removeItem('userCurrentRequest');
+                }
+            })
+            .catch(error => {
+                console.error('Error checking existing requests on load:', error);
+                // Fall back to the dedicated endpoint
+                fetch(`${baseUrl}/api/user/check_own_request`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.has_request === true) {
+                        showRequestBanner(data);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error in fallback check:', error);
+                    // Final fallback to the original method
+            checkExistingRequests().then(existingRequest => {
+                if (existingRequest) {
+                            showRequestBanner(existingRequest);
+                        }
+                    });
+                });
+            });
+        }
+        
+        // Helper function to show the request banner
+        function showRequestBanner(existingRequest) {
+                    // Banner removed as requested
+                    console.log('Request banner display disabled');
+        }
+
+        // Call this function when the page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize existing components
+            initNotifications();
+            
+            // We'll call checkExistingRequestsOnLoad later, after the function is defined
+            
+            // Settings icon functionality
+            document.getElementById('settings-icon').addEventListener('click', function() {
+                // Toggle the settings expanded state
+                document.body.classList.add('wave-expanded');
+                // Disable scrolling
+                document.body.style.overflow = 'hidden';
+                
+                // Load user profile data
+                loadProfileData('wave');
+            });
+        });
+        
+        // Now call checkExistingRequestsOnLoad after all functions are defined
+        setTimeout(checkExistingRequestsOnLoad, 2000);
+    </script>
+    
+    <!-- Ensure announcement system is initialized -->
+    <script>
+        // Make sure AnnouncementController is initialized
+        if (typeof AnnouncementController !== 'undefined') {
+            console.log('Manually initializing AnnouncementController');
+            AnnouncementController.init();
+        } else {
+            console.error('AnnouncementController not found! Check if announcement.js is loaded correctly.');
+        }
+    </script>
+</body>
+</html>

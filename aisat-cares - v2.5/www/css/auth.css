@@ -1,0 +1,625 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+:root {
+    --primary-color: #6b9ac4;
+    --primary-light: #97c4e6;
+    --primary-dark: #4a7ba7;
+    --accent-color: #b6dcfe;
+    --wave-color: #8fb8de;
+    --light-bg: #e8f4ff;
+    --white: #ffffff;
+    --text-dark: #2c3e50;
+    --text-muted: #7f8c8d;
+    --success: #66bb6a;
+    --danger: #e57373;
+    --warning: #ffb74d;
+    --info: #4fc3f7;
+    --border-radius: 12px;
+    --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --transition: all 0.3s ease;
+}
+
+@font-face {
+    font-family: 'AndikaNewBasic';
+    src: url('Andika-Regular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+
+html, body {
+    font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    margin: 0;
+    height: 100vh;
+    background: linear-gradient(
+      to bottom,
+      var(--wave-color) 0%,
+      var(--light-bg) 40%,
+      var(--light-bg) 60%,
+      #d5e7f7 100%
+    );
+    
+    background-repeat: no-repeat;
+    overflow: hidden;
+}
+  
+
+
+
+.logo{
+    position: absolute;
+    top: 35%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 200px;
+    height: 200px;
+    background-image: url(../img/logo.png);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    transition: 1s ease, visibility 0s 1s; 
+}
+
+
+.aisat{
+    position: absolute;
+    top: 60%;
+    left: 50%;
+    width: 250px;
+    height: auto;
+    transform: translate(-50%, -50%);
+    font-size: 20px;
+    color: var(--text-dark);
+    font-weight: bold;
+    text-align: center;
+    background-repeat: no-repeat;
+    z-index: 1;
+}
+
+.logo.show {
+    top: 30%;
+    width: 120px;
+    height: 120px;
+    visibility: visible;
+    left: 50%;
+    transform: translate(-50%, -50%); /* centers the div */
+}
+
+.aisat.show {
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 1s ease, visibility 0s 1s;
+}
+
+.form-container {
+    position: absolute;
+    top: 65%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: auto; 
+    padding: 30px 20px;
+    text-align: center;
+    backdrop-filter: blur(4px);
+    opacity: 0 !important;
+    visibility: hidden;
+    transition: opacity 1s ease, visibility 0s 1s;
+    display: block !important;
+    z-index: 10;
+}
+
+
+.form-container.show {
+    opacity: 1 !important;
+    visibility: visible !important;
+    transition: opacity 1s ease, visibility 0s;
+    display: block !important;
+}
+
+.form-container.hide{
+    opacity: 0 !important;
+    visibility: visible;
+    transition: opacity 1s ease, visibility 0s;
+    display: none !important;
+}
+
+/* Message and loading indicator styles */
+.message {
+    text-align: center;
+    padding: 10px;
+    border-radius: var(--border-radius);
+    margin-bottom: 15px;
+    display: none;
+    width: 200px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.error {
+    background-color: rgba(220, 53, 69, 0.1);
+    color: var(--danger);
+    border-left: 4px solid var(--danger);
+}
+
+.success {
+    background-color: rgba(40, 167, 69, 0.1);
+    color: var(--success);
+    border-left: 4px solid var(--success);
+}
+
+.loading {
+    display: none;
+    text-align: center;
+    margin: 10px 0;
+}
+
+.spinner {
+    border: 4px solid rgba(0, 0, 0, 0.1);
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border-left-color: var(--primary-color);
+    animation: spin 1s linear infinite;
+    display: inline-block;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.register-container{
+    position: absolute;
+    top: 55%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: auto; 
+    padding: 30px 20px;
+    text-align: center;
+    backdrop-filter: blur(4px);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 1s ease, visibility 0s 1s;
+    display: block !important;
+    z-index: 10;
+}
+    
+.register-container.show {
+    opacity: 1 !important;
+    visibility: visible !important;
+    transition: opacity 1s ease, visibility 0s !important;
+    display: block !important;
+}
+
+.register-container.hide {
+    z-index: 10;
+    opacity: 0 !important;
+    visibility: visible !important;
+    transition: opacity 1s ease, visibility 0s !important;
+    display: none !important;
+}
+
+
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="name"],
+input[type="number"]{
+    display: block;
+    width: 200px;
+    padding: 10px 14px;
+    margin: 10px auto;
+    border: none;
+    border-radius: var(--border-radius);
+    background-color: rgba(255, 255, 255, 0.6);
+    box-shadow: var(--shadow);
+    font-size: 14px;
+    color: var(--text-dark);
+    transition: var(--transition);
+}
+
+input[type="text"]::placeholder,
+input[type="email"]::placeholder,
+input[type="password"]::placeholder,
+input[type="name"]::placeholder,
+input[type="number"]::placeholder {
+    color: var(--text-muted);
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+input[type="name"]:focus,
+input[type="number"]:focus {
+    background-color: rgba(255, 255, 255, 0.8);
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(107, 154, 196, 0.3);
+}
+
+select{
+    display: block;
+    width: 228px;
+    padding: 10px 14px;
+    margin: 10px auto;
+    text-align: center  !important;
+    border: none;
+    border-radius: var(--border-radius);
+    background-color: rgba(255, 255, 255, 0.6);
+    box-shadow: var(--shadow);
+    font-size: 14px;
+    color: var(--text-dark);
+}
+
+option{
+    text-align: left;
+    align-items: center;
+}
+
+button[type="submit"], .btn{
+    width: 45%;
+    padding: 12px;
+    margin-top: 15px;
+    background-color: var(--primary-color);
+    color: var(--white);
+    border: none;
+    border-radius: var(--border-radius);
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 14px;
+    box-shadow: var(--shadow);
+    transition: var(--transition);
+}
+
+button[type="submit"]:hover, .btn:hover{
+    background-color: var(--primary-light);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+button[type="submit"]:active, .btn:active {
+    transform: translateY(0);
+    box-shadow: var(--shadow);
+}
+
+.forgot-password {
+    font-size: 12px;
+    color: var(--text-dark);
+    text-decoration: none;
+    margin: 10px 0;
+    display: block;
+}
+
+.signup-link {
+    font-size: 12px;
+    margin-top: 15px;
+}
+
+.signup-link a {
+    font-weight: bold;
+    color: var(--text-dark);
+    text-decoration: none;
+}
+
+
+p {
+    font-size: 12px;
+    color: var(--text-dark);
+    margin-top: 10px;
+}
+
+
+#forgot-link {
+    font-size: 12px;
+    text-decoration: none;
+    margin: 10px 0;
+    display: block;
+    color: var(--primary-color);
+}
+
+#forgot-link.clicked {
+    color: var(--primary-light);
+    text-decoration: underline;
+}
+
+#lock-img{
+    width: 100px;
+    height: 100px;
+    margin-right: 5px;
+    vertical-align: middle;
+    position: absolute;
+    top: 20%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 0 50px var(--text-dark);
+    border-radius: 100%;
+}
+
+
+.popup-container{
+    width: 300px;
+    height: 300px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: var(--border-radius);
+    backdrop-filter: blur(6px); 
+    box-shadow: var(--shadow);
+  
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    transition: opacity 1s ease, visibility 0s;
+
+
+    text-align: center;
+    transition: opacity 1s ease, visibility 0s 1s;
+    z-index: 12;
+}
+
+
+.popup-container.showpopup {
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 1s ease, visibility 0s;
+    display: block !important;
+
+}
+.popup-container.hidepopup{
+    opacity: 0;
+    visibility: visible;
+    transition: opacity 1s ease, visibility 0s;
+    display: none !important;
+
+}
+
+.container.popupactive{
+    backdrop-filter: blur(50px); 
+
+}
+
+
+.popup-content{
+    padding-top: 40%;
+    font-size: 16px;
+    margin-top: 10px;
+    color: var(--text-dark);
+    text-align: center;
+    display: block;
+
+    
+}
+
+.popup-content.hide-email-sent{
+    display: none !important;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 1s ease, visibility 0s 1s;
+
+}
+
+.popup-content.show-email-sent{
+    display: block !important;
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 1s ease, visibility 0s;
+
+}
+
+.code-input {
+    width: 50px !important;
+    height: 50px !important;
+    margin: 0 5px !important;
+    text-align: center !important;
+    font-size: 24px !important;
+    border: 1px solid #ccc !important;
+    border-radius: 8px !important;
+    background-color: rgba(255, 255, 255, 0.8) !important;
+    color: var(--text-dark) !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+    padding: 5px !important;
+    box-sizing: border-box !important;
+    -webkit-appearance: none !important; /* Fix for iOS */
+}
+
+.code-content {
+    background-color: var(--white);
+    padding: 25px;
+    border-radius: 15px;
+    box-shadow: var(--shadow);
+    width: 85%;
+    max-width: 350px;
+    text-align: center;
+    margin: 0 auto;
+    margin-bottom: 20px;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    opacity: 0;
+    visibility: hidden;
+    transform: scale(0.8);
+    pointer-events: none;
+    transition: all 0.3s ease;
+    z-index: 1000;
+    position: relative;
+}
+
+.code-content.show {
+    display: flex !important;
+    opacity: 1 !important;
+    transform: scale(1) !important;
+    pointer-events: auto !important;
+    visibility: visible !important;
+}
+
+.code-content.hide-code {
+    display: none !important;
+}
+
+.code-content.show-code {
+    display: flex !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+.code-content .code-input {
+    width: 45px !important;
+    height: 45px !important;
+    margin: 0 5px !important;
+    text-align: center !important;
+    font-size: 24px !important;
+    border: 2px solid var(--wave-color) !important;
+    border-radius: 8px !important;
+    background-color: #f8f8f8 !important;
+    padding: 5px !important;
+    box-sizing: border-box !important;
+}
+
+.resetpass-content { 
+    padding-top: 20px;
+    background-color: var(--white);
+    padding: 25px;
+    border-radius: 15px;
+    box-shadow: var(--shadow);
+    width: 85%;
+    max-width: 350px;
+    text-align: center;
+    margin: 0 auto;
+    margin-bottom: 20px;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    opacity: 0;
+    visibility: hidden;
+    transform: scale(0.8);
+    pointer-events: none;
+    transition: all 0.3s ease;
+    z-index: 1000;
+    position: relative;
+}
+
+.resetpass-content.show {
+    display: flex !important;
+    opacity: 1 !important;
+    transform: scale(1) !important;
+    pointer-events: auto !important;
+    visibility: visible !important;
+}
+
+/* Password Reset Styling */
+#reset-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 999;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease;
+}
+
+#reset-container.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+#lock-img {
+    width: 80px;
+    height: 80px;
+    margin-bottom: 20px;
+    position: static;
+    transform: none;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    border-radius: 50%;
+}
+
+.popup-content {
+    background-color: var(--white);
+    padding: 25px;
+    border-radius: 15px;
+    box-shadow: var(--shadow);
+    width: 80%;
+    max-width: 320px;
+    text-align: center;
+    margin-bottom: 20px;
+    opacity: 1;
+    transform: scale(1);
+    transition: opacity 0.3s, transform 0.3s;
+    padding-top: initial;
+}
+
+.popup-content.hide {
+    opacity: 0;
+    transform: scale(0.8);
+    pointer-events: none;
+}
+
+#continue-reset {
+    width: 80%;
+    margin-top: 20px;
+}
+
+#resendcode {
+    color: var(--wave-color);
+    text-decoration: none;
+    font-weight: bold;
+}
+
+#resetbutton {
+    width: 80%;
+}
+
+#reset-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+}
+
+/* CSS for the exit button */
+.exit-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 20px;
+    cursor: pointer;
+    padding: 5px 10px;
+    border-radius: 50%;
+    transition: background-color 0.3s, color 0.3s;
+    z-index: 1000;
+}
+
+.exit-btn:hover {
+    background-color: rgba(0, 0, 0, 0.1);
+    color: var(--text-dark);
+}
+
+/* Add position: relative to containers that will contain the exit button */
+.popup-content, .code-content, .resetpass-content {
+    position: relative;
+}

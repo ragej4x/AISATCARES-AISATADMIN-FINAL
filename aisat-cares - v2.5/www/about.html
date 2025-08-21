@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About AISAT</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Define baseUrl globally before other scripts -->
+    <script>
+        // Define baseUrl for API calls globally so it's available to all scripts
+        const baseUrl = "https://jimboyaczon.pythonanywhere.com";
+    </script>
+    <style>
+        :root {
+            --primary-color: #6b9ac4;
+            --primary-light: #97c4e6;
+            --primary-dark: #4a7ba7;
+            --accent-color: #b6dcfe;
+            --wave-color: #8fb8de;
+            --light-bg: #e8f4ff;
+            --white: #ffffff;
+            --text-dark: #2c3e50;
+            --text-muted: #7f8c8d;
+            --success: #66bb6a;
+            --danger: #e57373;
+            --warning: #ffb74d;
+            --info: #4fc3f7;
+            --border-radius: 12px;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--light-bg);
+            color: var(--text-dark);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .header-bg {
+            position: fixed;
+            top: 0;
+            right: 0;
+            left: 0;
+            z-index: -1;
+            background-color: var(--wave-color);
+            height: 300px;
+            transition: all 0.5s ease;
+            opacity: 1;
+        }
+        
+        .header-bg.fade-out {
+            opacity: 0;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            z-index: 2;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 20px 0;
+            position: relative;
+            color: white;
+            padding-top: 40px;
+            padding-bottom: 40px;
+        }
+
+        .header h1.title {
+            color: var(--white);
+            margin-bottom: 10px;
+            font-size: 36px;
+            font-weight: 800;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .header:after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 4px;
+            background-color: var(--accent-color);
+            border-radius: 2px;
+        }
+
+        .card {
+            background-color: var(--white);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 25px;
+            margin-bottom: 20px;
+            transition: var(--transition);
+        }
+
+        .btn {
+            padding: 16px;
+            background-color: var(--primary-color);
+            color: var(--white);
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            text-align: center;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn i {
+            font-size: 18px;
+        }
+
+        .btn:hover {
+            background-color: var(--primary-light);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+            box-shadow: var(--shadow);
+        }
+
+        .back-btn {
+            margin-top: 20px;
+            background-color: var(--text-muted);
+        }
+
+        .back-btn:hover {
+            background-color: #5a6268;
+        }
+        
+        .about-section {
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .about-section h2 {
+            color: var(--primary-dark);
+            margin-bottom: 15px;
+            font-weight: 600;
+            font-size: 22px;
+            border-bottom: 2px solid var(--accent-color);
+            padding-bottom: 8px;
+        }
+        
+        .about-section p {
+            margin-bottom: 15px;
+            line-height: 1.6;
+            color: var(--text-dark);
+        }
+        
+        .mission-vision {
+            background-color: var(--light-bg);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 4px solid var(--primary-color);
+        }
+        
+        .mission-vision h3 {
+            color: var(--primary-dark);
+            margin-bottom: 10px;
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .about-image {
+            width: 100%;
+            border-radius: var(--border-radius);
+            margin: 15px 0;
+            box-shadow: var(--shadow);
+        }
+        
+        .logo {
+            max-width: 100%;
+            height: auto;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header-bg"></div>
+    
+    <div class="container">
+        <div class="header">
+            <img src="img/aisat.png" alt="AISAT College Logo" class="logo">
+        </div>
+        
+        <div class="card">
+            <div class="about-section">                
+                <h2>Asian Institute of Science and Technology</h2>
+                <p>AISAT (Asian Institute of Science and Technology) is a premier educational institution dedicated to providing quality education in the fields of science, technology, and related disciplines. Founded with the vision of nurturing future innovators and leaders, AISAT has been at the forefront of technological education for over a decade.</p>
+                
+                <div class="mission-vision">
+                    <h3>Our Mission</h3>
+                    <p>To provide accessible, quality education that empowers students with knowledge, skills, and values necessary to excel in a rapidly evolving global landscape while fostering innovation and responsible citizenship.</p>
+                    
+                    <h3>Our Vision</h3>
+                    <p>To be a leading institution in technological education, recognized for excellence in teaching, research, and community service, producing graduates who are globally competitive and socially responsible.</p>
+                </div>
+                
+                <h2>AISAT CARES</h2>
+                <p>AISAT CARES is our institutional service platform designed to streamline administrative processes and enhance the student experience. Through this platform, we aim to:</p>
+                <ul style="padding-left: 20px; margin-bottom: 15px;">
+                    <li>Facilitate efficient request processing</li>
+                    <li>Improve communication between students and administration</li>
+                    <li>Provide timely updates on campus activities and announcements</li>
+                    <li>Create a more responsive and student-centered environment</li>
+                </ul>
+                
+                <h2>Core Values</h2>
+                <p>At AISAT, we are guided by our core values:</p>
+                <ul style="padding-left: 20px; margin-bottom: 15px;">
+                    <li><strong>Excellence</strong> - Striving for the highest standards in all endeavors</li>
+                    <li><strong>Innovation</strong> - Encouraging creativity and forward-thinking approaches</li>
+                    <li><strong>Integrity</strong> - Upholding ethical standards and accountability</li>
+                    <li><strong>Service</strong> - Commitment to serving the community and society</li>
+                    <li><strong>Inclusivity</strong> - Embracing diversity and ensuring equal opportunities</li>
+                </ul>
+            </div>
+        </div>
+        
+        <button onclick="window.location.href='index.html'" class="btn back-btn">
+            <i class="fas fa-arrow-left"></i> Back to Home
+        </button>
+    </div>
+    
+    <script>
+        // Define cordovaFetch function - a wrapper for fetch that works in both Cordova and browser environments
+        function cordovaFetch(url, options = {}) {
+            return new Promise((resolve, reject) => {
+                // Check if running in Cordova environment
+                if (window.cordova && window.cordova.plugin && window.cordova.plugin.http) {
+                    // Convert fetch options to Cordova Advanced HTTP plugin format
+                    const method = (options.method || 'GET').toUpperCase();
+                    const headers = options.headers || {};
+                    const data = options.body ? 
+                        (typeof options.body === 'string' ? JSON.parse(options.body) : options.body) : 
+                        {};
+                    
+                    // Use Cordova's Advanced HTTP plugin
+                    cordova.plugin.http.sendRequest(url, {
+                        method: method,
+                        data: data,
+                        headers: headers,
+                        serializer: 'json'
+                    }, response => {
+                        // Create a fetch-like response object
+                        const fetchResponse = {
+                            ok: response.status >= 200 && response.status < 300,
+                            status: response.status,
+                            headers: response.headers,
+                            json: () => Promise.resolve(JSON.parse(response.data)),
+                            text: () => Promise.resolve(response.data)
+                        };
+                        resolve(fetchResponse);
+                    }, error => {
+                        reject(error);
+                    });
+                } else {
+                    // Fall back to standard fetch API
+                    fetch(url, options)
+                        .then(resolve)
+                        .catch(reject);
+                }
+            });
+        }
+
+        // Add animation for header background
+        window.addEventListener('scroll', function() {
+            const scrollPosition = window.scrollY;
+            const headerBg = document.querySelector('.header-bg');
+            
+            if (scrollPosition > 100) {
+                headerBg.classList.add('fade-out');
+            } else {
+                headerBg.classList.remove('fade-out');
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "640857001183",
+    "project_id": "aisatreg-da6b7",
+    "storage_bucket": "aisatreg-da6b7.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:640857001183:android:151533771206472fe16d6a",
+        "android_client_info": {
+          "package_name": "com.aczon.myapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAAM5p-Xy4wb-vebGu8lhIe5ipTTwioH3k"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

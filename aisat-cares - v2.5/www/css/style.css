@@ -1,0 +1,463 @@
+/* General Styles */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f5f5f5;
+    overflow-x: hidden;
+}
+
+.scroll-container {
+    min-height: 100vh;
+}
+
+.initial-view {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+/* Scroll Animation Styles */
+.content-section {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.content-section.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.header-fade {
+    transition: opacity 0.4s ease;
+}
+
+.header-fade.fade-out {
+    opacity: 0;
+}
+
+/* Notification Styles */
+.notification-item {
+    padding: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    background-color: rgba(255, 255, 255, 0.15);
+    border-radius: 10px;
+    margin-bottom: 10px;
+    transition: all 0.3s ease;
+}
+
+.notification-item .name {
+    font-weight: bold;
+    margin-bottom: 4px;
+    color: #2c3e50;
+    font-size: 15px;
+}
+
+.notification-item .details {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.notification-item.current-user {
+    background-color: rgba(255, 255, 255, 0.25);
+    position: relative;
+    border-left: 4px solid #ff9800;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.notification-item.current-user .name {
+    color: #fff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    font-weight: 600;
+}
+
+/* Remove the "Your Request" text by setting content to empty */
+.notification-item.current-user::after {
+    display: none;
+}
+
+/* Reset the timer position since there's no "Your Request" label anymore */
+.notification-item.current-user .timer {
+    right: 8px; /* Reset to default position */
+}
+
+.notification-item .timer {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background-color: #f39c12;
+    color: white;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 12px;
+}
+
+.notification-item .timer.warning {
+    background-color: #e74c3c;
+    animation: pulse 1s infinite;
+}
+
+.notification-item .details .request-id-text {
+    color: rgba(255, 255, 255, 0.9);
+    font-family: monospace;
+    font-weight: bold;
+    font-size: 11px;
+}
+
+/* Animation for warning timer */
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.6; }
+    100% { opacity: 1; }
+}
+
+/* Empty message style */
+.empty-message {
+    padding: 20px;
+    text-align: center;
+    color: #95a5a6;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.empty-message i {
+    font-size: 24px;
+    margin-bottom: 8px;
+}
+
+/* Calendar Styles */
+#appointment-calendar-container {
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 10px;
+}
+
+.calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.calendar-header button {
+    background-color: #50c6d8;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 12px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: all 0.2s ease;
+}
+
+.calendar-header button:hover {
+    background-color: #3da8b9;
+    transform: translateY(-2px);
+    box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+}
+
+.current-month-year {
+    font-size: 20px;
+    font-weight: bold;
+    color: #2C3E50;
+}
+
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+    margin-top: 15px;
+}
+
+.day-name {
+    font-weight: bold;
+    text-align: center;
+    padding: 5px;
+    color: #50c6d8;
+    font-size: 14px;
+}
+
+.day {
+    border: 1px solid #E0E6ED;
+    min-height: 50px;
+    height: auto;
+    aspect-ratio: 1/1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    font-size: 18px;
+    font-weight: 500;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    transition: all 0.2s ease;
+}
+
+@media (max-width: 360px) {
+    .day {
+        min-height: 40px;
+        font-size: 16px;
+    }
+    
+    .day-name {
+        font-size: 12px;
+        padding: 3px;
+    }
+    
+    .calendar-header button {
+        padding: 6px 10px;
+        font-size: 14px;
+    }
+    
+    .current-month-year {
+        font-size: 18px;
+    }
+}
+
+.day.open {
+    background: linear-gradient(135deg, #50c6d8 0%, #3da8b9 100%);
+    color: white;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+}
+
+.day.open:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.day.full {
+    background: linear-gradient(135deg, #E74C3C 0%, #c0392b 100%);
+    color: white;
+    border: none;
+}
+
+.day.unavail {
+    background-color: white;
+    color: #95A5A6;
+}
+
+.day.selectable {
+    cursor: pointer;
+}
+
+.day.selectable:hover {
+    border: 2px solid #50c6d8;
+}
+
+.day.selected {
+    border: 2px solid #50c6d8;
+    box-shadow: 0 0 12px rgba(80, 198, 216, 0.5);
+    transform: scale(1.08);
+}
+
+.status-indicator {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin: 8px 0;
+}
+
+.status-item {
+    display: flex;
+    align-items: center;
+    margin: 0 5px;
+    font-size: 12px;
+}
+
+.status-color {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 5px;
+}
+
+.status-open {
+    background-color: #50c6d8;
+}
+
+.status-full {
+    background-color: #E74C3C;
+}
+
+.status-unavail {
+    background-color: white;
+    border: 1px solid #E0E6ED;
+}
+
+.loading {
+    text-align: center;
+    margin: 10px 0;
+    font-style: italic;
+    color: #7F8C8D;
+}
+
+.calendar-message {
+    text-align: center;
+    margin: 10px 0;
+    padding: 8px;
+    border-radius: 4px;
+    display: none;
+}
+
+.calendar-message.success {
+    background-color: #D5F5E3;
+    color: #27AE60;
+}
+
+.calendar-message.error {
+    background-color: #FADBD8;
+    color: #C0392B;
+}
+
+.hidden {
+    display: none;
+}
+
+/* Appointment Form Styles */
+.appointment-form {
+    margin-top: 15px;
+    padding: 12px;
+    border: 1px solid #E0E6ED;
+    border-radius: 8px;
+    background-color: white;
+}
+
+.appointment-form h3 {
+    margin-top: 0;
+    color: #2C3E50;
+    font-size: 18px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    color: #7F8C8D;
+    font-size: 14px;
+}
+
+.form-group select, .form-group textarea {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #E0E6ED;
+    border-radius: 4px;
+    font-size: 14px;
+    box-sizing: border-box;
+    height: 40px;
+}
+
+.button-group {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+}
+
+.button-group button {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    flex: 1;
+    margin: 0 5px;
+}
+
+.confirm-appointment {
+    background-color: #50c6d8;
+    color: white;
+}
+
+.cancel-appointment {
+    background-color: #E74C3C;
+    color: white;
+}
+
+.continue-appointment {
+    background-color: #50c6d8;
+    color: white;
+}
+
+#calendar-continue-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 15px;
+    background: linear-gradient(135deg, #50c6d8 0%, #3da8b9 100%);
+    color: white;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 15px;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+#calendar-continue-btn:hover {
+    background: linear-gradient(135deg, #3da8b9 0%, #2a8997 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+#calendar-continue-btn i {
+    margin-right: 8px;
+}
+
+/* Make back button smaller */
+.back-btn {
+    margin-top: 15px !important;
+    padding: 12px !important;
+    font-size: 14px !important;
+    width: 40%;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%) !important;
+}
+
+.back-btn:hover {
+    background: linear-gradient(135deg, #7f8c8d 0%, #6c7a7d 100%) !important;
+}
+
+.back-btn i {
+    font-size: 14px !important;
+}
+
+.notification-item .info-display {
+    display: flex;
+    justify-content: space-between;
+    padding: 3px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 3px;
+    font-size: 12px;
+}
+
+.notification-item .info-display:last-child {
+    border-bottom: none;
+}
+
+.notification-item .info-label {
+    color: rgba(255, 255, 255, 0.7);
+    font-weight: 500;
+}
+
+.notification-item .info-value {
+    color: white;
+    font-weight: 600;
+}
+
+.notification-item.current-user .info-value {
+    color: #fff;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+} 
