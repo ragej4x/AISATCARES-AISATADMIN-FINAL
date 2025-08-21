@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Current Pending Requests</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            /* Only 3 colors as requested */
+            --primary: #3498db;
+            --secondary: #2c3e50; 
+            --white: #ffffff;
+
+            /* Derived colors (shades and transparency of the 3 base colors) */
+            --light-bg: #f5f8fb;
+            --sidebar-active: rgba(52, 152, 219, 0.1);
+            --border-color: rgba(44, 62, 80, 0.1);
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --text-muted: rgba(44, 62, 80, 0.6);
+            --input-bg: var(--white);
+            --input-border: rgba(44, 62, 80, 0.2);
+            --table-even-row: #f8f9fa;
+            --table-hover: #e9ecef;
+            --table-selected: #e7f5ff;
+            --action-bar-bg: #343a40;
+            --neutral-color: #868e96;
+            --neutral-hover: #495057;
+            --oncall-bg: #fff9db;
+            --countdown-active-bg: #fff5f5;
+        }
+        
+        [data-theme="dark"] {
+            --light-bg: #16213e;
+            --sidebar-active: rgba(76, 201, 240, 0.1);
+            --border-color: #2a2a4a;
+            --text-muted: #a0aec0;
+            --secondary: #e6e6e6;
+            --input-bg: #1a1a2e;
+            --input-border: #2a2a4a;
+            --primary: #4cc9f0;
+            --white: #1a1a2e;
+            --table-even-row: #252525;
+            --table-hover: #2a2a4a;
+            --table-selected: #364954;
+            --action-bar-bg: #1a1a2e;
+            --neutral-color: #727072;
+            --neutral-hover: #5a5a5a;
+            --oncall-bg: #4a4839;
+            --countdown-active-bg: #4a3941;
+            --success-color: #a9dc76;
+            --danger-color: #fc5d7c;
+            --warning-color: #ffcc66;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--light-bg);
+            color: var(--secondary);
+            transition: background-color 0.3s, color 0.3s;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            flex: 1;
+            width: 100%;
+            padding: 0;
+            max-width: 100%;
+            background-color: transparent;
+            padding-bottom: 5rem; /* Add padding to prevent content from being hidden behind fixed action bar */
+        }
+        
+        .card {
+            background-color: var(--white);
+            border-radius: 8px;
+            box-shadow: 0 2px 10px var(--shadow-color);
+            padding: 2rem;
+            margin: 0 2rem 2rem 2rem;
+        }
+        
+        h1 {
+            color: var(--secondary);
+            margin-bottom: 2rem;
+            font-weight: 600;
+            font-size: 2rem;
+            padding: 0 2rem;
+        }
+        
+        h2 {
+            font-size: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.75rem;
+            margin-bottom: 1.5rem;
+            color: var(--secondary);
+        }
+        
+        .search-container {
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+        
+        .search-container input {
+            padding: 0.75rem;
+            width: 100%;
+            max-width: 400px;
+            border-radius: 4px;
+            border: 1px solid var(--input-border);
+            font-size: 1rem;
+            transition: border-color 0.2s;
+            background-color: var(--input-bg);
+            color: var(--secondary);
+        }
+        
+        .search-container input:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: var(--white);
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+        }
+        
+        th, td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        th {
+            background-color: var(--primary);
+            color: white;
+            font-weight: 500;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+        }
+        
+        tr:nth-child(even) {
+            background-color: var(--table-even-row);
+        }
+        
+        tr.selectable {
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        tr.selectable:hover {
+            background-color: var(--table-hover);
+        }
+        
+        tr.selected {
+            background-color: var(--table-selected);
+            font-weight: 500;
+        }
+        
+        /* Request ID styling */
+        td:first-child {
+            color: var(--primary);
+            font-family: 'Consolas', monospace;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        
+        .loading, .empty {
+            text-align: center;
+            padding: 3rem;
+            font-size: 1.25rem;
+            color: var(--text-muted);
+            background-color: var(--white);
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            margin: 0 2rem;
+        }
+        
+        .action-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: var(--action-bar-bg);
+            padding: 1rem;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            z-index: 1000;
+        }
+        
+        .action-bar button {
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .action-call { 
+            background-color: var(--primary); 
+            color: white; 
+        }
+        
+        .action-call:hover { 
+            background-color: var(--accent-hover); 
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+        
+        .action-approve { 
+            background-color: var(--success-color); 
+            color: white; 
+        }
+        
+        .action-approve:hover { 
+            background-color: var(--success-hover); 
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+        
+        .action-reject { 
+            background-color: var(--danger-color); 
+            color: white; 
+        }
+        
+        .action-reject:hover { 
+            background-color: var(--danger-hover); 
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+        
+        .action-skip { 
+            background-color: var(--neutral-color); 
+            color: white; 
+        }
+        
+        .action-skip:hover { 
+            background-color: var(--neutral-hover); 
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+        
+        /* Countdown timer styles */
+        .countdown {
+            display: inline-block;
+            background-color: var(--danger-color);
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            margin-left: 0.5rem;
+            font-weight: 600;
+        }
+        
+        tr.oncall {
+            background-color: var(--oncall-bg) !important;
+        }
+        
+        tr.oncall.countdown-active {
+            background-color: var(--countdown-active-bg) !important;
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+        
+        .message {
+            padding: 1rem;
+            margin: 0 2rem 1.5rem 2rem;
+            border-radius: 4px;
+            border-left: 4px solid;
+            display: flex;
+            align-items: center;
+        }
+        
+        .message i {
+            margin-right: 10px;
+            font-size: 16px;
+        }
+        
+        .success {
+            background-color: rgba(46, 204, 113, 0.1);
+            border-color: var(--success-color);
+            color: var(--success-color);
+        }
+        
+        .error {
+            background-color: rgba(231, 76, 60, 0.1);
+            border-color: var(--danger-color);
+            color: var(--danger-color);
+        }
+    </style>
+    <script src="theme.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1><i class="fas fa-clock"></i> Current Pending Requests</h1>
+        
+        <div id="message" class="hidden message"></div>
+
+        <div class="card">
+            <h2><i class="fas fa-list"></i> Pending Requests List</h2>
+            
+            <div class="search-container">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" placeholder="Search by ID, name, or other details...">
+            </div>
+
+        <div id="requests-container">
+            <div class="loading">
+                <i class="fas fa-spinner fa-spin"></i> Loading requests...
+            </div>
+        </div>
+        <table id="requests-table" class="hidden">
+            <thead>
+                <tr>
+                    <th>Request ID</th>
+                    <th>ID No.</th>
+                    <th>Name</th>
+                    <th>Level</th>
+                    <th>Schedule Time</th>
+                    <th>Method</th>
+                    <th>Payment</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody id="requests-tbody">
+            </tbody>
+        </table>
+        </div>
+    </div>
+
+    <div id="action-bar" class="action-bar">
+        <button id="call-btn" class="action-call">
+            <i class="fas fa-phone"></i> Call
+        </button>
+        <button id="approve-btn" class="action-approve">
+            <i class="fas fa-check"></i> Approve
+        </button>
+        <button id="reject-btn" class="action-reject">
+            <i class="fas fa-times"></i> Reject
+        </button>
+        <button id="skip-btn" class="action-skip">
+            <i class="fas fa-forward"></i> Skip
+        </button>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Apply saved theme
+            applyTheme();
+            
+            // Don't fetch immediately, wait until we confirm token exists
+            setupActionButtons();
+            
+            // Check if we have a token before making API calls
+            if (localStorage.getItem('userToken')) {
+                fetchPendingRequests();
+                // Set up the refresh interval only if we have a token
+                setInterval(fetchPendingRequests, 3000); // Refresh data every 3 seconds
+            } else {
+                const container = document.getElementById('requests-container');
+                container.innerHTML = `<div class="empty"><i class="fas fa-exclamation-circle"></i> Authentication required. Please log in.</div>`;
+            }
+            
+            // Set up search functionality
+            document.getElementById('searchInput').addEventListener('input', filterRequests);
+        });
+
+        // Apply theme from localStorage
+        function applyTheme() {
+            const savedTheme = localStorage.getItem('adminTheme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        }
+
+        const baseUrl = "https://jimboyaczon.pythonanywhere.com";
+        let selectedUserIds = [];
+        const tbody = document.getElementById('requests-tbody');
+        // Track active timers
+        const activeTimers = new Map();
+        // Store all requests for filtering
+        let allRequests = [];
+
+        function fetchPendingRequests() {
+            return new Promise((resolve, reject) => {
+                const token = localStorage.getItem('userToken');
+    
+                if (!token) {
+                    const container = document.getElementById('requests-container');
+                    container.innerHTML = `<div class="empty"><i class="fas fa-exclamation-circle"></i> Authentication required. Please log in.</div>`;
+                    return resolve(); // Resolve the promise even in this case
+                }
+    
+                fetch(`${baseUrl}/api/pending_requests`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                })
+                    .then(response => {
+                        if (response.status === 401) {
+                            throw new Error('Your session has expired. Please log in again.');
+                        }
+                        if (!response.ok) {
+                            throw new Error(`Server responded with ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        allRequests = data; // Store all requests
+                        filterRequests(); // Apply any filters and render
+                        resolve(); // Resolve the promise when done
+                    })
+                    .catch(error => {
+                        console.error('Error fetching pending requests:', error);
+                        const container = document.getElementById('requests-container');
+                        container.innerHTML = `<div class="empty"><i class="fas fa-exclamation-triangle"></i> ${error.message}</div>`;
+                        showMessage(`<i class="fas fa-exclamation-circle"></i> ${error.message}`, 'error');
+                        resolve(); // Resolve the promise even on error
+                    });
+            });
+        }
+        
+        function filterRequests() {
+            const searchQuery = document.getElementById('searchInput').value.toLowerCase();
+            let filteredRequests = allRequests;
+            
+            // Apply search filter if there's a query
+            if (searchQuery) {
+                filteredRequests = allRequests.filter(user => {
+                    return (
+                        (user.request_id && user.request_id.toLowerCase().includes(searchQuery)) ||
+                        (user.idno && user.idno.toLowerCase().includes(searchQuery)) ||
+                        (user.name && user.name.toLowerCase().includes(searchQuery)) ||
+                        (user.level && user.level.toLowerCase().includes(searchQuery)) ||
+                        (user.method && user.method.toLowerCase().includes(searchQuery)) ||
+                        (user.payment && user.payment.toLowerCase().includes(searchQuery)) ||
+                        (user.status && user.status.toLowerCase().includes(searchQuery))
+                    );
+                });
+            }
+            
+            renderRequests(filteredRequests);
+        }
+
+        function renderRequests(requests) {
+            const container = document.getElementById('requests-container');
+            const table = document.getElementById('requests-table');
+            
+            // Get admin filter settings from localStorage
+            let filterSettings = {
+                express: true,
+                regular: true,
+                priority: true
+            };
+            
+            try {
+                const savedFilters = JSON.parse(localStorage.getItem('adminFilterSettings'));
+                if (savedFilters) {
+                    filterSettings = savedFilters;
+                }
+            } catch (e) {
+                console.error('Error loading filter settings:', e);
+            }
+            
+            // Filter out scheduled requests (those with future dates)
+            const now = new Date();
+            
+            // Filter requests based on admin preferences and exclude future scheduled requests
+            const filteredRequests = requests.filter(user => {
+                // First check if it's a scheduled request (future date)
+                if (user.schedule) {
+                    const scheduleDate = new Date(user.schedule);
+                    // If schedule is in the future, exclude it (it belongs on scheduled_request.html)
+                    if (scheduleDate > now) {
+                        return false;
+                    }
+                }
+                
+                // If payment type is not specified, always show it
+                if (!user.payment) return true;
+                
+                // Otherwise, check if the payment type is enabled in filter settings
+                return (
+                    (user.payment === 'express' && filterSettings.express) ||
+                    (user.payment === 'regular' && filterSettings.regular) ||
+                    (user.payment === 'priority' && filterSettings.priority)
+                );
+            });
+            
+            tbody.innerHTML = ''; // Clear only the table body, not the whole container
+
+            if (filteredRequests.length === 0) {
+                container.innerHTML = `<div class="empty"><i class="fas fa-info-circle"></i> No current pending or on-call requests. Future scheduled requests can be found in the Scheduled Requests section.</div>`;
+                table.classList.add('hidden');
+                // If the list is empty, clear selection and hide the action bar
+                selectedUserIds = [];
+                return;
+            }
+
+            // If we previously had an empty message, clear it and show the table
+            container.innerHTML = '';
+            table.classList.remove('hidden');
+
+            // Build the table rows as a string for efficiency
+            let tableContent = '';
+            filteredRequests.forEach(user => {
+                // Use the new field name 'schedule' instead of 'queue_datetime'
+                const scheduleDate = user.schedule ? new Date(user.schedule) : new Date();
+                const scheduleTime = scheduleDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                
+                // Check if the current user is in our list of selected IDs
+                const isSelected = selectedUserIds.includes(user.id);
+                const selectedClass = isSelected ? 'selected' : '';
+                
+                // Add oncall class if status is oncall
+                const statusClass = user.status === 'oncall' ? 'oncall' : '';
+                
+                // Add countdown timer if status is oncall and counter exists
+                let countdownHtml = '';
+                if (user.status === 'oncall' && user.counter) {
+                    countdownHtml = `<span class="countdown">${user.counter}m left</span>`;
+                    
+                    // Start or update the timer for this user
+                    startCountdownTimer(user.id, user.counter);
+                }
+
+                tableContent += `
+                    <tr class="selectable ${selectedClass} ${statusClass}" data-user-id="${user.id}">
+                        <td>${user.request_id || ''}</td>
+                        <td>${user.idno || ''}</td>
+                        <td>${user.name || ''}</td>
+                        <td>${user.level || ''}</td>
+                        <td>${scheduleTime}</td>
+                        <td>${user.method || ''}</td>
+                        <td>${user.payment || ''}</td>
+                        <td>${user.status || ''} ${countdownHtml}</td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = tableContent;
+
+            // Verify that all selected users still exist in the new list.
+            const currentIds = new Set(filteredRequests.map(u => u.id));
+            selectedUserIds = selectedUserIds.filter(id => currentIds.has(id));
+
+            // Add single click listener to the table body for efficiency
+            if (!tbody.hasAttribute('data-click-listener')) {
+                 tbody.addEventListener('click', handleRowClick);
+                 tbody.setAttribute('data-click-listener', 'true');
+            }
+        }
+
+        function handleRowClick(event) {
+            const row = event.target.closest('tr.selectable');
+            if (!row) return;
+
+            // Clear any previous selection
+            selectedUserIds = [];
+            document.querySelectorAll('tr.selected').forEach(r => r.classList.remove('selected'));
+
+            // Select only the clicked row
+            const userId = row.dataset.userId;
+            selectedUserIds.push(userId);
+            row.classList.add('selected');
+        }
+        
+        function setupActionButtons() {
+            document.getElementById('call-btn').addEventListener('click', handleCall);
+            document.getElementById('approve-btn').addEventListener('click', () => updateUserStatus('approved', false, null, false));
+            document.getElementById('reject-btn').addEventListener('click', () => updateUserStatus('rejected', false, null, false));
+            document.getElementById('skip-btn').addEventListener('click', handleSkip);
+        }
+        
+        // Function to handle Call button click
+        function handleCall() {
+            // Clear any previous selection
+            selectedUserIds = [];
+            document.querySelectorAll('tr.selected').forEach(r => r.classList.remove('selected'));
+            
+            // Get all selectable rows
+            const allRows = Array.from(tbody.querySelectorAll('tr.selectable'));
+            if (allRows.length === 0) {
+                showMessage("<i class=\"fas fa-exclamation-triangle\"></i> No requests available to call.", "error");
+                return;
+            }
+            
+            // Select the first three rows (or fewer if less than 3 are available)
+            const rowsToSelect = Math.min(3, allRows.length);
+            for (let i = 0; i < rowsToSelect; i++) {
+                const row = allRows[i];
+                const userId = row.dataset.userId;
+                selectedUserIds.push(userId);
+                row.classList.add('selected');
+            }
+            
+            console.log(`Calling ${selectedUserIds.length} users`);
+            
+            // First, update status to oncall without timer (keep selection)
+            updateUserStatus('oncall', false, null, true).then(() => {
+                // After status update, remove any existing timers for these users
+                selectedUserIds.forEach(userId => {
+                    if (activeTimers.has(userId)) {
+                        console.log(`Removing timer for called user ${userId}`);
+                        clearInterval(activeTimers.get(userId).interval);
+                        activeTimers.delete(userId);
+                        
+                        // Find the row and remove countdown display
+                        const row = document.querySelector(`tr[data-user-id="${userId}"]`);
+                        if (row) {
+                            const countdownEl = row.querySelector('.countdown');
+                            if (countdownEl) {
+                                countdownEl.textContent = '';
+                                countdownEl.style.animation = 'none';
+                                countdownEl.style.backgroundColor = '';
+                            }
+                            row.classList.remove('countdown-active');
+                        }
+                    }
+                    
+                    // Reset counter to null in database to prevent auto-rejection
+                    fetch(`${baseUrl}/api/update_counter`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${localStorage.getItem('userToken')}`
+                        },
+                        body: JSON.stringify({
+                            user_id: userId,
+                            counter: null  // Use null to indicate no timer/no auto-rejection
+                        })
+                    }).catch(error => {
+                        console.error("Error resetting counter:", error);
+                    });
+                });
+                
+                // Show feedback message
+                showMessage(`<i class="fas fa-check-circle"></i> Called ${selectedUserIds.length} user(s) - No automatic timer for these requests`, "success");
+                
+                // Refresh to update UI
+                setTimeout(fetchPendingRequests, 500);
+            });
+        }
+        
+        // Function to handle skip action
+        function handleSkip() {
+            if (selectedUserIds.length === 0) {
+                showMessage("<i class=\"fas fa-exclamation-triangle\"></i> Please select at least one user.", "error");
+                return;
+            }
+            
+            console.log(`Skip button clicked for ${selectedUserIds.length} users`);
+            
+            // First set the status to oncall
+            updateUserStatus('oncall', true, null, false).then(() => {
+                // Then start a 10-minute countdown for each selected user
+                selectedUserIds.forEach(userId => {
+                    console.log(`Starting 10-minute timer for skipped user ${userId}`);
+                    startCountdownTimer(userId, 10); // 10 minutes
+                    
+                    // Update the counter in the database
+                    updateUserCounter(userId, 10);
+                });
+                
+                // Show feedback message
+                showMessage(`<i class="fas fa-info-circle"></i> Skipped ${selectedUserIds.length} user(s) - 10 minute countdown started. Request will auto-reject when timer expires.`, "success");
+                
+                // Clear selection
+                selectedUserIds = [];
+                document.querySelectorAll('tr.selected').forEach(row => row.classList.remove('selected'));
+                
+                // Refresh to ensure UI is updated
+                setTimeout(() => {
+                    fetchPendingRequests();
+                }, 500);
+            });
+        }
+        
+        // Function to update user counter in database
+        function updateUserCounter(userId, minutes) {
+            const token = localStorage.getItem('userToken');
+            if (!token) {
+                console.error("Authentication error");
+                return;
+            }
+            
+            fetch(`${baseUrl}/api/update_counter`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    user_id: userId,
+                    counter: minutes
+                })
+            })
+            .catch(error => {
+                console.error("Error updating counter:", error);
+            });
+        }
+        
+        // Function to start or update countdown timer for a user
+        function startCountdownTimer(userId, initialMinutes) {
+            console.log(`Starting timer for user ${userId} with ${initialMinutes} minutes`);
+            // Clear existing timer if any
+            if (activeTimers.has(userId)) {
+                clearInterval(activeTimers.get(userId).interval);
+            }
+            
+            const endTime = new Date();
+            endTime.setMinutes(endTime.getMinutes() + initialMinutes);
+            
+            const updateTimer = () => {
+                const now = new Date();
+                const diffMs = Math.max(0, endTime - now); // remaining milliseconds
+                const diffMinutes = Math.floor(diffMs / 60000); // full minutes
+                const diffSeconds = Math.floor((diffMs % 60000) / 1000); // remaining seconds
+                
+                // Find the row for this user
+                const row = document.querySelector(`tr[data-user-id="${userId}"]`);
+                if (!row) {
+                    // Row no longer exists, clear the timer
+                    if (activeTimers.has(userId)) {
+                        clearInterval(activeTimers.get(userId).interval);
+                        activeTimers.delete(userId);
+                    }
+                    return;
+                }
+                
+                // Update countdown display
+                const countdownEl = row.querySelector('.countdown');
+                if (countdownEl) {
+                    // Format as MM:SS
+                    const displaySeconds = diffSeconds.toString().padStart(2, '0');
+                    const timeLeft = `${diffMinutes}:${displaySeconds}`;
+                    countdownEl.textContent = timeLeft;
+                    
+                    // Add warning class and pulsing animation when less than 3 minutes remain
+                    if (diffMinutes < 3) {
+                        row.classList.add('countdown-active');
+                        
+                        // Add pulsing animation when less than 1 minute remains
+                        if (diffMinutes < 1) {
+                            countdownEl.style.animation = 'pulse 1s infinite';
+                            countdownEl.style.backgroundColor = '#ff3b30'; // brighter red
+                        } else {
+                            countdownEl.style.animation = 'pulse 2s infinite';
+                        }
+                    }
+                }
+                
+                // When timer reaches zero, auto-reject the user
+                if (diffMs === 0) {
+                    clearInterval(activeTimers.get(userId).interval);
+                    activeTimers.delete(userId);
+                    
+                    console.log(`Timer expired for user ${userId} - Auto-rejecting`);
+                    
+                    // Show visual feedback before rejection
+                    if (row) {
+                        row.style.backgroundColor = 'rgba(255, 0, 0, 0.3)';
+                        row.style.transition = 'background-color 0.5s';
+                    }
+                    
+                    // Auto-reject the user after a short delay to show the visual feedback
+                    setTimeout(() => {
+                        console.log(`Executing auto-reject for user ${userId}`);
+                        // Use direct fetch call instead of updateUserStatus to ensure it works
+                        const token = localStorage.getItem('userToken');
+                        if (!token) {
+                            console.error("Authentication error");
+                            return;
+                        }
+                        
+                        fetch(`${baseUrl}/api/update_status`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${token}`
+                            },
+                            body: JSON.stringify({
+                                user_ids: [userId],
+                                status: 'rejected'
+                            })
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            console.log(`Auto-rejection successful for user ${userId}`, data);
+                            // Refresh the data
+                            fetchPendingRequests();
+                        })
+                        .catch(error => {
+                            console.error(`Error auto-rejecting user ${userId}:`, error);
+                        });
+                    }, 500);
+                }
+            };
+            
+            // Add CSS for pulsing animation if not already in the document
+            if (!document.getElementById('countdown-pulse-animation')) {
+                const styleEl = document.createElement('style');
+                styleEl.id = 'countdown-pulse-animation';
+                styleEl.innerHTML = `
+                    @keyframes pulse {
+                        0% { opacity: 1; }
+                        50% { opacity: 0.6; }
+                        100% { opacity: 1; }
+                    }
+                `;
+                document.head.appendChild(styleEl);
+            }
+            
+            // Store the timer interval and update every second for smoother countdown
+            const timerInterval = setInterval(updateTimer, 1000); // Update every second
+            activeTimers.set(userId, { 
+                interval: timerInterval,
+                endTime: endTime
+            });
+            
+            // Initial update
+            updateTimer();
+        }
+
+        function updateUserStatus(status, isSkip = false, specificUserIds = null, keepSelection = false) {
+            const userIds = specificUserIds || selectedUserIds;
+            
+            if (userIds.length === 0) {
+                showMessage("<i class=\"fas fa-exclamation-triangle\"></i> Please select at least one user.", "error");
+                return Promise.reject(new Error("No users selected"));
+            }
+
+            const token = localStorage.getItem('userToken');
+            if (!token) {
+                showMessage("<i class=\"fas fa-exclamation-circle\"></i> Authentication error. Please log in again.", "error");
+                return Promise.reject(new Error("Authentication error"));
+            }
+
+            // Save the current selection if we need to keep it
+            const savedSelection = [...selectedUserIds];
+
+            return fetch(`${baseUrl}/api/update_status`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    user_ids: userIds,
+                    status: status
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.message) {
+                    if (!isSkip) {
+                        showMessage(`<i class="fas fa-check-circle"></i> ${data.message}`, "success");
+                    }
+                    
+                    // For approved or rejected status, log the transaction
+                    if ((status === 'approved' || status === 'rejected') && !isSkip) {
+                        // Log each user transaction
+                        userIds.forEach(userId => {
+                            logTransaction(userId, status);
+                        });
+                    }
+                    
+                    // For non-skip actions or auto-reject, remove rows
+                    if (!isSkip || status === 'rejected') {
+                        userIds.forEach(id => {
+                            const row = document.querySelector(`tr[data-user-id='${id}']`);
+                            if (row) row.remove();
+                            
+                            // Clear any active timers for this user
+                            if (activeTimers.has(id)) {
+                                clearInterval(activeTimers.get(id).interval);
+                                activeTimers.delete(id);
+                            }
+                        });
+                    }
+                    
+                    // Reset selection and refresh the list
+                    if (!isSkip && !keepSelection) {
+                        selectedUserIds = [];
+                    }
+                    
+                    // Refresh the list
+                    fetchPendingRequests().then(() => {
+                        // If we need to keep the selection, restore it after refresh
+                        if (keepSelection) {
+                            // Clear any current selection first
+                            document.querySelectorAll('tr.selected').forEach(r => r.classList.remove('selected'));
+                            
+                            // Restore the saved selection
+                            savedSelection.forEach(id => {
+                                const row = document.querySelector(`tr[data-user-id='${id}']`);
+                                if (row) {
+                                    row.classList.add('selected');
+                                }
+                            });
+                        }
+                    });
+                    
+                    return data;
+                } else {
+                    throw new Error(data.error || "Failed to update users.");
+                }
+            })
+            .catch(error => {
+                console.error("Error updating user status:", error);
+                if (!isSkip) {
+                    showMessage(`<i class="fas fa-exclamation-circle"></i> An error occurred: ${error.message}`, "error");
+                }
+                throw error;
+            });
+        }
+        
+        function logTransaction(userId, status) {
+            const token = localStorage.getItem('userToken');
+            if (!token) return;
+            
+            fetch(`${baseUrl}/api/log_transaction`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    user_id: userId,
+                    status: status,
+                    notes: `Request ${status} via pending requests page`
+                })
+            })
+            .catch(error => {
+                console.error("Error logging transaction:", error);
+            });
+        }
+
+        // Function to show message
+        function showMessage(text, type) {
+            const messageBox = document.getElementById('message');
+            messageBox.innerHTML = text;
+            messageBox.className = `message ${type}`;
+            messageBox.classList.remove('hidden');
+            
+            // Auto-hide success messages after 3 seconds
+            if (type === 'success') {
+                setTimeout(() => {
+                    messageBox.classList.add('hidden');
+                }, 3000);
+            }
+        }
+    </script>
+</body>
+</html>

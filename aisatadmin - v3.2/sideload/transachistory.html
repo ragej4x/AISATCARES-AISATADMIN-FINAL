@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transaction History</title>
+    <style>
+        :root {
+            /* Only 3 colors as requested */
+            --primary: #3498db;
+            --secondary: #2c3e50; 
+            --white: #ffffff;
+
+            /* Derived colors (shades and transparency of the 3 base colors) */
+            --light-bg: #f5f8fb;
+            --sidebar-active: rgba(52, 152, 219, 0.1);
+            --border-color: rgba(44, 62, 80, 0.1);
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --text-muted: rgba(44, 62, 80, 0.6);
+            --input-bg: var(--white);
+            --input-border: rgba(44, 62, 80, 0.2);
+            --table-even-row: #f8f9fa;
+            --table-hover: #e9ecef;
+            --table-selected: #e7f5ff;
+            --action-bar-bg: #343a40;
+            --neutral-color: #868e96;
+            --neutral-hover: #495057;
+            --approved-bg: #def7ec;
+            --rejected-bg: #fde8e8;
+        }
+        
+        [data-theme="dark"] {
+            --light-bg: #16213e;
+            --sidebar-active: rgba(76, 201, 240, 0.1);
+            --border-color: #2a2a4a;
+            --text-muted: #a0aec0;
+            --secondary: #e6e6e6;
+            --input-bg: #1a1a2e;
+            --input-border: #2a2a4a;
+            --primary: #4cc9f0;
+            --white: #1a1a2e;
+            --table-even-row: #252525;
+            --table-hover: #2a2a4a;
+            --table-selected: #364954;
+            --action-bar-bg: #1a1a2e;
+            --neutral-color: #727072;
+            --neutral-hover: #5a5a5a;
+            --approved-bg: #1e3a2d;
+            --rejected-bg: #3d2a2a;
+            --success-color: #a9dc76;
+            --danger-color: #fc5d7c;
+            --warning-color: #ffcc66;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--light-bg);
+            color: var(--secondary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        
+        .container {
+            flex: 1;
+            width: 100%;
+            max-width: 100%;
+            padding: 2rem;
+            margin: 0 auto;
+        }
+        
+        .card {
+            background-color: var(--white);
+            border-radius: 8px;
+            box-shadow: 0 2px 10px var(--shadow-color);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        h1 {
+            color: var(--secondary);
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+            font-size: 2rem;
+        }
+        
+        h2 {
+            font-size: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.75rem;
+            margin-bottom: 1.5rem;
+            color: var(--secondary);
+        }
+        
+        .filters {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .filter-group label {
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--secondary);
+        }
+        
+        .filter-group input, .filter-group select {
+            padding: 0.75rem;
+            border-radius: 4px;
+            border: 1px solid var(--input-border);
+            font-size: 1rem;
+            background-color: var(--input-bg);
+            color: var(--secondary);
+        }
+        
+        .filter-group input:focus, .filter-group select:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(76, 201, 240, 0.25);
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--accent-hover);
+            opacity: 0.9;
+        }
+        
+        .btn-secondary {
+            background-color: var(--neutral-color);
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background-color: var(--neutral-hover);
+        }
+        
+        .search-container {
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+        
+        .search-container input {
+            padding: 0.75rem;
+            width: 100%;
+            max-width: 400px;
+            border-radius: 4px;
+            border: 1px solid var(--input-border);
+            font-size: 1rem;
+            transition: border-color 0.2s;
+            background-color: var(--input-bg);
+            color: var(--secondary);
+        }
+        
+        .search-container input:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(76, 201, 240, 0.25);
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: var(--white);
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+        
+        th, td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        th {
+            background-color: var(--primary);
+            color: white;
+            font-weight: 500;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+        }
+        
+        tr:nth-child(even) {
+            background-color: var(--table-even-row);
+        }
+        
+        tr.approved {
+            background-color: var(--approved-bg);
+        }
+        
+        tr.rejected {
+            background-color: var(--rejected-bg);
+        }
+        
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin: 2rem 0;
+        }
+        
+        .pagination button {
+            background-color: var(--white);
+            color: var(--secondary);
+            border: 1px solid var(--border-color);
+            padding: 0.5rem 1rem;
+            margin: 0 0.25rem;
+            cursor: pointer;
+        }
+        
+        .pagination button.active {
+            background-color: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+        
+        .pagination button:hover:not(.active) {
+            background-color: var(--table-hover);
+        }
+        
+        .loading, .empty {
+            text-align: center;
+            padding: 3rem;
+            font-size: 1.25rem;
+            color: var(--text-muted);
+            background-color: var(--white);
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background-color: var(--white);
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            padding: 1.5rem;
+        }
+        
+        .stat-card h3 {
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.5rem;
+            color: var(--secondary);
+        }
+        
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .stat-item:last-child {
+            border-bottom: none;
+        }
+        
+        .stat-label {
+            font-weight: 500;
+            color: var(--secondary);
+        }
+        
+        .stat-value {
+            font-weight: 600;
+            color: var(--primary);
+        }
+        
+        /* Print styles */
+        @media print {
+            body {
+                background-color: white;
+                color: black;
+            }
+            
+            .container {
+                padding: 0;
+            }
+            
+            .card {
+                box-shadow: none;
+                border: 1px solid #ddd;
+                page-break-inside: avoid;
+                margin-bottom: 20px;
+            }
+            
+            table {
+                width: 100%;
+                box-shadow: none;
+                border: 1px solid #ddd;
+            }
+            
+            th {
+                background-color: #f0f0f0 !important;
+                color: black !important;
+                border: 1px solid #ddd;
+            }
+            
+            tr:nth-child(even) {
+                background-color: #f9f9f9 !important;
+            }
+            
+            .btn-print {
+                display: none;
+            }
+            
+            .filters, .button-group, .search-container {
+                display: none;
+            }
+            
+            /* Add page breaks before main sections */
+            .stats-container {
+                page-break-before: always;
+            }
+            
+            /* Ensure proper rendering of approved/rejected rows */
+            tr.approved {
+                background-color: #f0fff0 !important;
+            }
+            
+            tr.rejected {
+                background-color: #fff0f0 !important;
+            }
+        }
+        
+        .btn-print {
+            background-color: var(--success-color);
+            color: white;
+        }
+        
+        .btn-print:hover {
+            background-color: var(--success-hover);
+            opacity: 0.9;
+        }
+        
+        /* Export styles */
+        .export-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .export-dialog {
+            background-color: var(--white);
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            padding: 2rem;
+            width: 500px;
+            max-width: 90%;
+        }
+        
+        .export-dialog h3 {
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+            color: var(--secondary);
+        }
+        
+        .export-options {
+            margin-bottom: 1.5rem;
+        }
+        
+        .export-option {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.5rem;
+            padding: 0.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            color: var(--secondary);
+        }
+        
+        .export-option:hover {
+            background-color: var(--table-hover);
+        }
+        
+        .export-option input {
+            margin-right: 1rem;
+        }
+        
+        .export-path {
+            margin-bottom: 1.5rem;
+        }
+        
+        .export-path label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--secondary);
+        }
+        
+        .export-path input {
+            width: 100%;
+            padding: 0.75rem;
+            border-radius: 4px;
+            border: 1px solid var(--input-border);
+            background-color: var(--input-bg);
+            color: var(--secondary);
+        }
+        
+        .export-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+        }
+        
+        .export-link {
+            display: none;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="theme.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1><i class="fas fa-history"></i> Transaction History</h1>
+        
+        <div class="card">
+            <h2><i class="fas fa-chart-bar"></i> Statistics</h2>
+            <div id="stats-container" class="stats-container">
+                <div class="loading"><i class="fas fa-spinner fa-spin"></i> Loading statistics...</div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2>Transaction Filters</h2>
+            <div class="filters">
+                <div class="filter-group">
+                    <label for="date-from">From Date</label>
+                    <input type="date" id="date-from">
+                </div>
+                <div class="filter-group">
+                    <label for="date-to">To Date</label>
+                    <input type="date" id="date-to">
+                </div>
+                <div class="filter-group">
+                    <label for="status-filter">Status</label>
+                    <select id="status-filter">
+                        <option value="">All Statuses</option>
+                        <option value="approved">Approved</option>
+                        <option value="rejected">Rejected</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="payment-filter">Payment Type</label>
+                    <select id="payment-filter">
+                        <option value="">All Payment Types</option>
+                        <option value="express">Express</option>
+                        <option value="regular">Regular</option>
+                        <option value="priority">Priority</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="idno-filter">ID Number</label>
+                    <input type="text" id="idno-filter" placeholder="Search by ID Number">
+                </div>
+            </div>
+            <div class="button-group">
+                <button id="apply-filter-btn" class="btn-primary">Apply Filters</button>
+                <button id="reset-filter-btn" class="btn-secondary">Reset Filters</button>
+                <button id="export-btn" class="btn-print">Export to CSV</button>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2>Transaction List</h2>
+            
+            <div class="search-container">
+                <input type="text" id="searchInput" placeholder="Search in transactions...">
+            </div>
+            
+            <div id="transactions-container">
+                <p class="loading">Loading transactions...</p>
+            </div>
+            <table id="transactions-table" class="hidden">
+                <thead>
+                    <tr>
+                        <th>Date/Time</th>
+                        <th>Request ID</th>
+                        <th>ID Number</th>
+                        <th>Name</th>
+                        <th>Level</th>
+                        <th>Payment</th>
+                        <th>Status</th>
+                        <th>Processed By</th>
+                        <th>Notes</th>
+                    </tr>
+                </thead>
+                <tbody id="transactions-tbody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <!-- Export Dialog -->
+    <div class="export-container" id="export-container">
+        <div class="export-dialog">
+            <h3>Export Transaction History</h3>
+            <div class="export-options">
+                <div class="export-option">
+                    <input type="radio" id="export-current" name="export-option" value="current" checked>
+                    <label for="export-current">Export current view (with filters)</label>
+                </div>
+                <div class="export-option">
+                    <input type="radio" id="export-all" name="export-option" value="all">
+                    <label for="export-all">Export all transactions</label>
+                </div>
+            </div>
+            <div class="export-buttons">
+                <button id="cancel-export-btn" class="btn-secondary">Cancel</button>
+                <button id="confirm-export-btn" class="btn-primary">Export</button>
+            </div>
+            <a id="download-link" class="export-link" download="transaction_history.html"></a>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Check if we have a token before making API calls
+            if (localStorage.getItem('userToken')) {
+                // First create table if it doesn't exist
+                createTransactionHistoryTable()
+                    .then(() => {
+                        // Then load data
+                        fetchTransactionStats();
+                        fetchTransactionHistory();
+                    });
+                
+                // Set up the search functionality
+                document.getElementById('searchInput').addEventListener('input', filterTransactions);
+                
+                // Set up filter buttons
+                document.getElementById('apply-filter-btn').addEventListener('click', applyFilters);
+                document.getElementById('reset-filter-btn').addEventListener('click', resetFilters);
+                
+                // Set up export button
+                document.getElementById('export-btn').addEventListener('click', showExportDialog);
+                document.getElementById('cancel-export-btn').addEventListener('click', hideExportDialog);
+                document.getElementById('confirm-export-btn').addEventListener('click', exportToPDF);
+            } else {
+                const container = document.getElementById('transactions-container');
+                container.innerHTML = `<p class="empty">Authentication required. Please log in.</p>`;
+                
+                const statsContainer = document.getElementById('stats-container');
+                statsContainer.innerHTML = `<p class="empty">Authentication required. Please log in.</p>`;
+            }
+        });
+        
+        // Show export dialog
+        function showExportDialog() {
+            document.getElementById('export-container').style.display = 'flex';
+        }
+        
+        // Hide export dialog
+        function hideExportDialog() {
+            document.getElementById('export-container').style.display = 'none';
+        }
+        
+        // Export to PDF function that generates a simple CSV file
+        function exportToPDF() {
+            // Get export option
+            const exportCurrent = document.getElementById('export-current').checked;
+            
+            // Get transactions to export
+            const transactions = exportCurrent ? 
+                getFilteredTransactions() : allTransactions;
+            
+            // Show loading message
+            const loadingMessage = document.createElement('div');
+            loadingMessage.style.position = 'fixed';
+            loadingMessage.style.top = '50%';
+            loadingMessage.style.left = '50%';
+            loadingMessage.style.transform = 'translate(-50%, -50%)';
+            loadingMessage.style.padding = '20px';
+            loadingMessage.style.background = 'rgba(0,0,0,0.8)';
+            loadingMessage.style.color = 'white';
+            loadingMessage.style.borderRadius = '8px';
+            loadingMessage.style.zIndex = '10000';
+            loadingMessage.innerHTML = 'Generating export file... Please wait.';
+            document.body.appendChild(loadingMessage);
+            
+            try {
+                // Get current date and filter values for the filename
+                const currentDate = new Date().toISOString().split('T')[0];
+                const dateFrom = document.getElementById('date-from').value || '';
+                const dateTo = document.getElementById('date-to').value || '';
+                const status = document.getElementById('status-filter').value || '';
+                
+                // Create CSV content
+                let csvContent = "Date/Time,Request ID,ID Number,Name,Level,Payment,Status,Processed By,Notes\n";
+                
+                if (transactions && transactions.length > 0) {
+                    transactions.forEach(trans => {
+                        // Format date nicely
+                        let formattedDate = 'N/A';
+                        if (trans.action_date) {
+                            const date = new Date(trans.action_date);
+                            formattedDate = date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+                        }
+                        
+                        // Escape fields with quotes if they contain commas
+                        const escapeCSV = (field) => {
+                            if (!field) return '';
+                            field = String(field).replace(/"/g, '""');
+                            return field.includes(',') ? `"${field}"` : field;
+                        };
+                        
+                        // Add the row
+                        csvContent += [
+                            escapeCSV(formattedDate),
+                            escapeCSV(trans.request_id || ''),
+                            escapeCSV(trans.idno || ''),
+                            escapeCSV(trans.name || ''),
+                            escapeCSV(trans.level || ''),
+                            escapeCSV(trans.payment || ''),
+                            escapeCSV(trans.status || ''),
+                            escapeCSV(trans.admin_name || ''),
+                            escapeCSV(trans.notes || '')
+                        ].join(',') + "\n";
+                    });
+                } else {
+                    csvContent += "No transactions found\n";
+                }
+                
+                // Create a blob and download
+                const blob = new Blob([csvContent], { type: 'text/csv' });
+                const url = URL.createObjectURL(blob);
+                
+                // Create and click a temporary download link
+                const downloadLink = document.createElement('a');
+                downloadLink.href = url;
+                downloadLink.download = `AISAT_Transaction_History_${currentDate}.csv`;
+                document.body.appendChild(downloadLink);
+                downloadLink.click();
+                document.body.removeChild(downloadLink);
+                
+                // Clean up and show success message
+                URL.revokeObjectURL(url);
+                
+                // Display success message to user
+                setTimeout(() => {
+                    document.body.removeChild(loadingMessage);
+                    hideExportDialog();
+                    alert('Transaction report has been exported as CSV. You can open it in Excel or Google Sheets.');
+                }, 1000);
+                
+            } catch (error) {
+                console.error('Error preparing report:', error);
+                document.body.removeChild(loadingMessage);
+                hideExportDialog();
+                alert('Failed to generate report. Please try again.');
+            }
+        }
+        
+        // Get filtered transactions
+        function getFilteredTransactions() {
+            const searchQuery = document.getElementById('searchInput').value.toLowerCase();
+            
+            // Apply search filter if there's a query
+            if (searchQuery) {
+                return allTransactions.filter(trans => {
+                    return (
+                        (trans.request_id && trans.request_id.toLowerCase().includes(searchQuery)) ||
+                        (trans.idno && trans.idno.toLowerCase().includes(searchQuery)) ||
+                        (trans.name && trans.name.toLowerCase().includes(searchQuery)) ||
+                        (trans.level && trans.level.toLowerCase().includes(searchQuery)) ||
+                        (trans.payment && trans.payment.toLowerCase().includes(searchQuery)) ||
+                        (trans.status && trans.status.toLowerCase().includes(searchQuery)) ||
+                        (trans.admin_name && trans.admin_name.toLowerCase().includes(searchQuery)) ||
+                        (trans.notes && trans.notes.toLowerCase().includes(searchQuery))
+                    );
+                });
+            }
+            
+            return allTransactions;
+        }
+        
+        const baseUrl = "https://jimboyaczon.pythonanywhere.com";
+        let allTransactions = []; // Store all transactions for filtering
+        
+        // Create transaction history table if it doesn't exist
+        function createTransactionHistoryTable() {
+            const token = localStorage.getItem('userToken');
+            if (!token) {
+                return Promise.reject(new Error("Authentication required"));
+            }
+            
+            return fetch(`${baseUrl}/api/create_transaction_history_table`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Server responded with ${response.status}`);
+                }
+                return response.json();
+            })
+            .catch(error => {
+                console.error("Error creating transaction history table:", error);
+                // Continue anyway, table might already exist
+                return Promise.resolve();
+            });
+        }
+        
+        // Fetch transaction history
+        function fetchTransactionHistory() {
+            const token = localStorage.getItem('userToken');
+            if (!token) {
+                const container = document.getElementById('transactions-container');
+                container.innerHTML = `<p class="empty">Authentication required. Please log in.</p>`;
+                return Promise.reject(new Error("Authentication required"));
+            }
+            
+            // Get filter values
+            const dateFrom = document.getElementById('date-from').value;
+            const dateTo = document.getElementById('date-to').value;
+            const status = document.getElementById('status-filter').value;
+            const paymentType = document.getElementById('payment-filter').value;
+            const idno = document.getElementById('idno-filter').value;
+            
+            // Build query string
+            let queryParams = [];
+            if (dateFrom) queryParams.push(`start_date=${encodeURIComponent(dateFrom)}`);
+            if (dateTo) queryParams.push(`end_date=${encodeURIComponent(dateTo)}`);
+            if (status) queryParams.push(`status=${encodeURIComponent(status)}`);
+            if (paymentType) queryParams.push(`payment_type=${encodeURIComponent(paymentType)}`);
+            if (idno) queryParams.push(`idno=${encodeURIComponent(idno)}`);
+            
+            const queryString = queryParams.length > 0 ? `?${queryParams.join('&')}` : '';
+            
+            return fetch(`${baseUrl}/api/transaction_history${queryString}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+            .then(response => {
+                if (response.status === 401) {
+                    throw new Error('Your session has expired. Please log in again.');
+                }
+                if (!response.ok) {
+                    throw new Error(`Server responded with ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                allTransactions = data; // Store all transactions
+                filterTransactions(); // Apply any search filters
+            })
+            .catch(error => {
+                console.error("Error fetching transaction history:", error);
+                const container = document.getElementById('transactions-container');
+                container.innerHTML = `<p class="empty">${error.message}</p>`;
+            });
+        }
+        
+        // Fetch transaction statistics
+        function fetchTransactionStats() {
+            const token = localStorage.getItem('userToken');
+            if (!token) {
+                const container = document.getElementById('stats-container');
+                container.innerHTML = `<p class="empty">Authentication required. Please log in.</p>`;
+                return Promise.reject(new Error("Authentication required"));
+            }
+            
+            // Get filter values for stats (date range only)
+            const dateFrom = document.getElementById('date-from').value;
+            const dateTo = document.getElementById('date-to').value;
+            
+            // Build query string
+            let queryParams = [];
+            if (dateFrom) queryParams.push(`start_date=${encodeURIComponent(dateFrom)}`);
+            if (dateTo) queryParams.push(`end_date=${encodeURIComponent(dateTo)}`);
+            
+            const queryString = queryParams.length > 0 ? `?${queryParams.join('&')}` : '';
+            
+            return fetch(`${baseUrl}/api/transaction_history_stats${queryString}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Server responded with ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                renderStats(data);
+            })
+            .catch(error => {
+                console.error("Error fetching transaction stats:", error);
+                const container = document.getElementById('stats-container');
+                container.innerHTML = `<p class="empty">${error.message}</p>`;
+            });
+        }
+        
+        // Render statistics
+        function renderStats(stats) {
+            const container = document.getElementById('stats-container');
+            
+            // Clear previous stats
+            container.innerHTML = '';
+            
+            // Render status counts
+            const statusCard = document.createElement('div');
+            statusCard.className = 'stat-card';
+            statusCard.innerHTML = `
+                <h3>Status Statistics</h3>
+                <div class="stat-content">
+                    ${renderStatItems(stats.status_counts)}
+                </div>
+            `;
+            container.appendChild(statusCard);
+            
+            // Render payment counts
+            const paymentCard = document.createElement('div');
+            paymentCard.className = 'stat-card';
+            paymentCard.innerHTML = `
+                <h3>Payment Type Statistics</h3>
+                <div class="stat-content">
+                    ${renderStatItems(stats.payment_counts)}
+                </div>
+            `;
+            container.appendChild(paymentCard);
+            
+            // Render admin counts
+            const adminCard = document.createElement('div');
+            adminCard.className = 'stat-card';
+            adminCard.innerHTML = `
+                <h3>Admin Statistics</h3>
+                <div class="stat-content">
+                    ${renderAdminStats(stats.admin_counts)}
+                </div>
+            `;
+            container.appendChild(adminCard);
+        }
+        
+        // Helper function to render stat items
+        function renderStatItems(statObj) {
+            if (!statObj || Object.keys(statObj).length === 0) {
+                return '<p>No data available</p>';
+            }
+            
+            return Object.entries(statObj)
+                .map(([key, value]) => `
+                    <div class="stat-item">
+                        <span class="stat-label">${key || 'Unknown'}</span>
+                        <span class="stat-value">${value}</span>
+                    </div>
+                `)
+                .join('');
+        }
+        
+        // Helper function to render admin stats
+        function renderAdminStats(adminCounts) {
+            if (!adminCounts || adminCounts.length === 0) {
+                return '<p>No data available</p>';
+            }
+            
+            return adminCounts
+                .map(admin => `
+                    <div class="stat-item">
+                        <span class="stat-label">${admin.name || 'Unknown'}</span>
+                        <span class="stat-value">${admin.count}</span>
+                    </div>
+                `)
+                .join('');
+        }
+        
+        // Filter transactions based on search input
+        function filterTransactions() {
+            const searchQuery = document.getElementById('searchInput').value.toLowerCase();
+            let filteredTransactions = allTransactions;
+            
+            // Apply search filter if there's a query
+            if (searchQuery) {
+                filteredTransactions = allTransactions.filter(trans => {
+                    return (
+                        (trans.request_id && trans.request_id.toLowerCase().includes(searchQuery)) ||
+                        (trans.idno && trans.idno.toLowerCase().includes(searchQuery)) ||
+                        (trans.name && trans.name.toLowerCase().includes(searchQuery)) ||
+                        (trans.level && trans.level.toLowerCase().includes(searchQuery)) ||
+                        (trans.payment && trans.payment.toLowerCase().includes(searchQuery)) ||
+                        (trans.status && trans.status.toLowerCase().includes(searchQuery)) ||
+                        (trans.admin_name && trans.admin_name.toLowerCase().includes(searchQuery)) ||
+                        (trans.notes && trans.notes.toLowerCase().includes(searchQuery))
+                    );
+                });
+            }
+            
+            renderTransactions(filteredTransactions);
+        }
+        
+        // Apply filters button handler
+        function applyFilters() {
+            fetchTransactionStats();
+            fetchTransactionHistory();
+        }
+        
+        // Reset filters button handler
+        function resetFilters() {
+            document.getElementById('date-from').value = '';
+            document.getElementById('date-to').value = '';
+            document.getElementById('status-filter').value = '';
+            document.getElementById('payment-filter').value = '';
+            document.getElementById('idno-filter').value = '';
+            
+            fetchTransactionStats();
+            fetchTransactionHistory();
+        }
+        
+        // Render transactions to the table
+        function renderTransactions(transactions) {
+            const container = document.getElementById('transactions-container');
+            const table = document.getElementById('transactions-table');
+            const tbody = document.getElementById('transactions-tbody');
+            
+            if (transactions.length === 0) {
+                container.innerHTML = `<p class="empty">No transaction history found.</p>`;
+                table.classList.add('hidden');
+                return;
+            }
+            
+            // If we previously had an empty message, clear it and show the table
+            container.innerHTML = '';
+            table.classList.remove('hidden');
+            
+            // Clear the table body
+            tbody.innerHTML = '';
+            
+            // Build the table rows
+            transactions.forEach(trans => {
+                const row = document.createElement('tr');
+                
+                // Add status class for styling
+                if (trans.status === 'approved') {
+                    row.classList.add('approved');
+                } else if (trans.status === 'rejected') {
+                    row.classList.add('rejected');
+                }
+                
+                // Format date nicely
+                let formattedDate = 'N/A';
+                if (trans.action_date) {
+                    const date = new Date(trans.action_date);
+                    formattedDate = date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+                }
+                
+                row.innerHTML = `
+                    <td>${formattedDate}</td>
+                    <td>${trans.request_id || ''}</td>
+                    <td>${trans.idno || ''}</td>
+                    <td>${trans.name || ''}</td>
+                    <td>${trans.level || ''}</td>
+                    <td>${trans.payment || ''}</td>
+                    <td>${trans.status || ''}</td>
+                    <td>${trans.admin_name || ''}</td>
+                    <td>${trans.notes || ''}</td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+        }
+    </script>
+</body>
+</html>
+

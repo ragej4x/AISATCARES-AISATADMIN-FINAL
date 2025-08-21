@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scheduled Requests</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            /* Only 3 colors as requested */
+            --primary: #3498db;
+            --secondary: #2c3e50; 
+            --white: #ffffff;
+
+            /* Derived colors (shades and transparency of the 3 base colors) */
+            --light-bg: #f5f8fb;
+            --sidebar-active: rgba(52, 152, 219, 0.1);
+            --border-color: rgba(44, 62, 80, 0.1);
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --text-muted: rgba(44, 62, 80, 0.6);
+            --input-bg: var(--white);
+            --input-border: rgba(44, 62, 80, 0.2);
+            --table-even-row: #f8f9fa;
+            --table-hover: #e9ecef;
+            --modal-bg: var(--white);
+            --modal-overlay: rgba(0, 0, 0, 0.5);
+            --shadow-color: rgba(0, 0, 0, 0.05);
+        }
+        
+        [data-theme="dark"] {
+            --light-bg: #16213e;
+            --sidebar-active: rgba(76, 201, 240, 0.1);
+            --border-color: #2a2a4a;
+            --text-muted: #a0aec0;
+            --secondary: #e6e6e6;
+            --input-bg: #1a1a2e;
+            --input-border: #2a2a4a;
+            --primary: #4cc9f0;
+            --white: #1a1a2e;
+            --table-even-row: #252525;
+            --table-hover: #2a2a4a;
+            --modal-bg: #1a1a2e;
+            --modal-overlay: rgba(0, 0, 0, 0.7);
+            --shadow-color: rgba(0, 0, 0, 0.2);
+            --success-color: #a9dc76;
+            --danger-color: #fc5d7c;
+            --warning-color: #ffcc66;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--light-bg);
+            color: var(--secondary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+            transition: background-color 0.3s, color 0.3s;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .container {
+            flex: 1;
+            width: 100%;
+            padding: 0;
+            max-width: 100%;
+            background-color: transparent;
+            padding-bottom: 5rem; /* Add padding to prevent content from being hidden behind fixed action bar */
+        }
+        
+        .card {
+            background-color: var(--white);
+            border-radius: 8px;
+            box-shadow: 0 2px 10px var(--shadow-color);
+            padding: 2rem;
+            margin: 0 2rem 2rem 2rem;
+        }
+        
+        h1 {
+            color: var(--secondary);
+            margin-bottom: 2rem;
+            font-weight: 600;
+            font-size: 2rem;
+            padding: 0 2rem;
+        }
+        
+        h2 {
+            font-size: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.75rem;
+            margin-bottom: 1.5rem;
+            color: var(--secondary);
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        
+        .header h1 {
+            color: var(--secondary);
+            font-weight: 600;
+            font-size: 2rem;
+        }
+        
+        .filter-container {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .filter-container label {
+            font-weight: 500;
+            color: var(--text-muted);
+        }
+        
+        .filter-container select,
+        .filter-container input[type="date"] {
+            padding: 0.75rem;
+            border-radius: 4px;
+            border: 1px solid var(--input-border);
+            font-size: 1rem;
+            transition: border-color 0.2s;
+            background-color: var(--input-bg);
+            color: var(--secondary);
+        }
+        
+        .filter-container select:focus,
+        .filter-container input[type="date"]:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(77, 171, 247, 0.25);
+        }
+        
+        /* Improve date input appearance across browsers */
+        .filter-container input[type="date"]::-webkit-calendar-picker-indicator {
+            cursor: pointer;
+        }
+        
+        /* Dark theme support for date picker icon */
+        [data-theme="dark"] .filter-container input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+        }
+        
+        .search-container {
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+        
+        .search-container input {
+            padding: 0.75rem 0.75rem 0.75rem 2.5rem;
+            width: 100%;
+            max-width: 400px;
+            border-radius: 4px;
+            border: 1px solid var(--input-border);
+            font-size: 1rem;
+            transition: border-color 0.2s;
+            background-color: var(--input-bg);
+            color: var(--secondary);
+        }
+        
+        .search-container input:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(77, 171, 247, 0.25);
+        }
+        
+        .search-container i {
+            position: absolute;
+            left: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: var(--white);
+            border-radius: 8px;
+            box-shadow: 0 2px 10px var(--shadow-color);
+            overflow: hidden;
+        }
+        
+        th, td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        th {
+            background-color: var(--primary);
+            color: white;
+            font-weight: 500;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            user-select: none;
+        }
+        
+        th:hover {
+            background-color: var(--accent-hover);
+        }
+        
+        th.sorted-asc::after {
+            content: " ↑";
+            color: white;
+        }
+        
+        th.sorted-desc::after {
+            content: " ↓";
+            color: white;
+        }
+        
+        tr:hover {
+            background-color: var(--table-hover);
+        }
+        
+        tr:nth-child(even) {
+            background-color: var(--table-even-row);
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .btn {
+            padding: 0.5rem 0.75rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            transition: all 0.2s;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+        
+        .btn-call {
+            background-color: var(--success-color);
+            color: white;
+        }
+        
+        .btn-call:hover {
+            background-color: var(--success-hover);
+            opacity: 0.9;
+        }
+        
+        .btn-delete {
+            background-color: var(--danger-color);
+            color: white;
+        }
+        
+        .btn-delete:hover {
+            background-color: var(--danger-hover);
+            opacity: 0.9;
+        }
+        
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 1.5rem;
+        }
+        
+        .pagination button {
+            padding: 0.5rem 0.75rem;
+            border: 1px solid var(--border-color);
+            background-color: var(--white);
+            color: var(--secondary);
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+        
+        .pagination button.active {
+            background-color: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+        
+        .pagination button:hover:not(.active) {
+            background-color: var(--table-hover);
+        }
+        
+        .no-data {
+            text-align: center;
+            padding: 3rem;
+            font-style: italic;
+            color: var(--text-muted);
+            background-color: var(--white);
+            border-radius: 8px;
+            box-shadow: 0 2px 10px var(--shadow-color);
+            margin: 0 2rem;
+        }
+        
+        .request-id {
+            font-family: 'Consolas', monospace;
+            font-weight: 600;
+            color: var(--primary);
+            font-size: 0.9rem;
+        }
+        
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--modal-overlay);
+        }
+        
+        .modal-content {
+            background-color: var(--modal-bg);
+            margin: 10% auto;
+            padding: 2rem;
+            border-radius: 8px;
+            width: 400px;
+            max-width: 90%;
+            box-shadow: 0 5px 15px var(--shadow-color);
+            position: relative;
+            color: var(--secondary);
+        }
+        
+        .close-btn {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            font-size: 1.25rem;
+            cursor: pointer;
+            color: var(--text-muted);
+            transition: color 0.2s;
+        }
+        
+        .close-btn:hover {
+            color: var(--secondary);
+        }
+        
+        .modal-title {
+            margin-top: 0;
+            color: var(--secondary);
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+        
+        .modal-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.75rem;
+            margin-top: 1.5rem;
+        }
+        
+        .message {
+            padding: 1rem;
+            margin: 0 2rem 1.5rem 2rem;
+            border-radius: 4px;
+            border-left: 4px solid;
+            display: flex;
+            align-items: center;
+        }
+        
+        .message i {
+            margin-right: 10px;
+            font-size: 16px;
+        }
+        
+        .success {
+            background-color: rgba(46, 204, 113, 0.1);
+            border-color: var(--success-color);
+            color: var(--success-color);
+        }
+        
+        .error {
+            background-color: rgba(231, 76, 60, 0.1);
+            border-color: var(--danger-color);
+            color: var(--danger-color);
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+    </style>
+    <script src="theme.js"></script>
+</head>
+<body>
+    <div class="container">
+            <h1><i class="fas fa-calendar-alt"></i> Scheduled Requests</h1>
+        
+        <div id="message" class="hidden message"></div>
+        
+        <div class="card">
+            <h2><i class="fas fa-list"></i> Scheduled Requests List</h2>
+        
+        <div class="filter-container">
+                <label for="startDateFilter">From:</label>
+                <input type="date" id="startDateFilter">
+                
+                <label for="endDateFilter">To:</label>
+                <input type="date" id="endDateFilter">
+                
+                <label for="paymentFilter">Payment Type:</label>
+                <select id="paymentFilter">
+                    <option value="all">All Types</option>
+                    <option value="regular">Regular</option>
+                    <option value="express">Express</option>
+                    <option value="priority">Priority</option>
+                </select>
+            </div>
+            
+            <div class="search-container">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" placeholder="Search by ID, name, or other details...">
+        </div>
+        
+            <div id="tableContainer">
+                <!-- Table will be inserted here -->
+        </div>
+        
+        <div class="pagination" id="pagination">
+                <!-- Pagination buttons will be inserted here -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- Confirmation Modal -->
+    <div id="confirmModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" id="closeModal">&times;</span>
+            <h3 class="modal-title"><i class="fas fa-exclamation-circle"></i> Confirm Action</h3>
+            <p id="modalMessage">Are you sure you want to perform this action?</p>
+            <div class="modal-buttons">
+                <button class="btn" id="cancelAction">Cancel</button>
+                <button class="btn btn-delete" id="confirmAction"><i class="fas fa-check"></i> Confirm</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Apply saved theme
+            applyTheme();
+            
+            // Set default date values
+            const today = new Date();
+            const startDateFilter = document.getElementById('startDateFilter');
+            const endDateFilter = document.getElementById('endDateFilter');
+            
+            // Format date as YYYY-MM-DD for input[type="date"]
+            const formatDateForInput = (date) => {
+                return date.toISOString().split('T')[0];
+            };
+            
+            // Default start date to today
+            startDateFilter.value = formatDateForInput(today);
+            
+            // Default end date to 7 days from now
+            const nextWeek = new Date(today);
+            nextWeek.setDate(today.getDate() + 7);
+            endDateFilter.value = formatDateForInput(nextWeek);
+            
+            // Rest of initialization code
+        });
+        
+        // Apply theme from localStorage
+        function applyTheme() {
+            const savedTheme = localStorage.getItem('adminTheme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        }
+        
+        // Global variables
+        let allRequests = [];
+        let filteredRequests = [];
+        let currentPage = 1;
+        const rowsPerPage = 10;
+        let currentSortColumn = 'schedule';
+        let currentSortDirection = 'asc';
+        
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set up event listeners for sorting, filtering, and pagination
+            setupEventListeners();
+        });
+        
+        // Function to fetch scheduled requests from the server
+        function fetchScheduledRequests() {
+            const token = localStorage.getItem('userToken');
+            if (!token) {
+                showNoData("<i class='fas fa-exclamation-circle'></i> Authentication error. Please log in again.");
+                showMessage("<i class='fas fa-exclamation-circle'></i> Authentication error. Please log in again.", "error");
+                return;
+            }
+            
+            // Fetch data from the API
+            fetch('/api/scheduled_requests', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                allRequests = data;
+                
+                // Apply initial filtering and sorting
+                applyFiltersAndSort();
+                
+                // Show no data message if there are no requests
+                if (allRequests.length === 0) {
+                    showNoData("<i class='fas fa-info-circle'></i> No scheduled requests found.");
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching scheduled requests:', error);
+                showNoData("<i class='fas fa-spinner fa-spin'></i> Waiting for scheduled requests data...");
+                // Don't show error message to user to avoid the "Failed to fetch" indicator
+            });
+        }
+        
+        // Function to apply filters and sorting
+        function applyFiltersAndSort() {
+            // Get filter values
+            const startDateValue = document.getElementById('startDateFilter').value;
+            const endDateValue = document.getElementById('endDateFilter').value;
+            const paymentFilter = document.getElementById('paymentFilter').value;
+            const searchQuery = document.getElementById('searchInput').value.toLowerCase();
+            
+            // Parse date values
+            const startDate = startDateValue ? new Date(startDateValue) : null;
+            const endDate = endDateValue ? new Date(endDateValue) : null;
+            
+            // If we have an end date, set it to the end of that day (23:59:59)
+            if (endDate) {
+                endDate.setHours(23, 59, 59, 999);
+            }
+            
+            // Filter requests
+            filteredRequests = allRequests.filter(request => {
+                // Date filtering
+                if (startDate || endDate) {
+                    const requestDate = new Date(request.schedule);
+                    
+                    // Filter by start date if provided
+                    if (startDate && requestDate < startDate) {
+                        return false;
+                    }
+                    
+                    // Filter by end date if provided
+                    if (endDate && requestDate > endDate) {
+                        return false;
+                    }
+                }
+                
+                // Payment type filtering
+                if (paymentFilter !== 'all' && request.payment && request.payment.toLowerCase() !== paymentFilter) {
+                    return false;
+                }
+                
+                // Search filtering
+                if (searchQuery) {
+                    const searchFields = [
+                        request.name, 
+                        request.idno, 
+                        request.request_id
+                    ].map(field => field ? field.toLowerCase() : '');
+                    
+                    return searchFields.some(field => field.includes(searchQuery));
+                }
+                
+                return true;
+            });
+            
+            // Sort the filtered requests
+            sortRequests(currentSortColumn, currentSortDirection);
+            
+            // Update the table with the filtered and sorted data
+            updateTable();
+        }
+        
+        // Function to sort requests
+        function sortRequests(column, direction) {
+            filteredRequests.sort((a, b) => {
+                let valueA = a[column];
+                let valueB = b[column];
+                
+                // Handle special case for schedule (date) sorting
+                if (column === 'schedule') {
+                    valueA = new Date(valueA);
+                    valueB = new Date(valueB);
+                }
+                
+                // Handle case-insensitive string comparison
+                if (typeof valueA === 'string' && typeof valueB === 'string') {
+                    valueA = valueA.toLowerCase();
+                    valueB = valueB.toLowerCase();
+                }
+                
+                if (valueA < valueB) {
+                    return direction === 'asc' ? -1 : 1;
+                }
+                if (valueA > valueB) {
+                    return direction === 'asc' ? 1 : -1;
+                }
+                return 0;
+            });
+        }
+        
+        // Function to update the table with the current data
+        function updateTable() {
+            const tableContainer = document.getElementById('tableContainer');
+            
+            // Calculate pagination
+            const totalPages = Math.ceil(filteredRequests.length / rowsPerPage);
+            const startIndex = (currentPage - 1) * rowsPerPage;
+            const endIndex = Math.min(startIndex + rowsPerPage, filteredRequests.length);
+            const currentPageData = filteredRequests.slice(startIndex, endIndex);
+            
+            // Show/hide no data message
+            if (filteredRequests.length === 0) {
+                tableContainer.innerHTML = `<div class="no-data"><i class="fas fa-info-circle"></i> No matching requests found.</div>`;
+            } else {
+                // Create the table HTML
+                let tableHtml = `
+                    <table>
+                        <thead>
+                            <tr>
+                                <th data-sort="request_id">Request ID</th>
+                                <th data-sort="idno">ID No.</th>
+                                <th data-sort="name">Name</th>
+                                <th data-sort="level">Level</th>
+                                <th data-sort="payment">Payment</th>
+                                <th data-sort="method">Method</th>
+                                <th data-sort="schedule">Schedule</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="requests-tbody">
+                `;
+                
+                // Add rows for current page data
+                currentPageData.forEach(request => {
+                    // Format the schedule date and time
+                    const scheduleDate = new Date(request.schedule);
+                    const formattedDate = scheduleDate.toLocaleDateString();
+                    const formattedTime = scheduleDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    
+                    tableHtml += `
+                        <tr>
+                        <td><span class="request-id">${request.request_id || '-'}</span></td>
+                        <td>${request.idno || '-'}</td>
+                        <td>${request.name || '-'}</td>
+                        <td>${request.level || '-'}</td>
+                        <td>${request.payment || '-'}</td>
+                        <td>${request.method || '-'}</td>
+                        <td>${formattedDate} ${formattedTime}</td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="btn btn-delete" data-id="${request.id}" data-request-id="${request.request_id}">
+                                    <i class="fas fa-ban"></i> Reject
+                                </button>
+                            </div>
+                        </td>
+                        </tr>
+                    `;
+                });
+                
+                tableHtml += `
+                        </tbody>
+                    </table>
+                `;
+                
+                // Set the table HTML
+                tableContainer.innerHTML = tableHtml;
+                
+                // Add event listeners to the action buttons
+                addActionButtonListeners();
+            }
+            
+            // Update pagination
+            updatePagination(totalPages);
+        }
+        
+        // Function to update pagination controls
+        function updatePagination(totalPages) {
+            const paginationDiv = document.getElementById('pagination');
+            paginationDiv.innerHTML = '';
+            
+            // Don't show pagination if there's only one page
+            if (totalPages <= 1) {
+                return;
+            }
+            
+            // Previous button
+            const prevButton = document.createElement('button');
+            prevButton.innerHTML = '&laquo;';
+            prevButton.disabled = currentPage === 1;
+            prevButton.addEventListener('click', () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    updateTable();
+                }
+            });
+            paginationDiv.appendChild(prevButton);
+            
+            // Page buttons
+            const maxButtons = 5;
+            let startPage = Math.max(1, currentPage - Math.floor(maxButtons / 2));
+            let endPage = Math.min(totalPages, startPage + maxButtons - 1);
+            
+            if (endPage - startPage + 1 < maxButtons) {
+                startPage = Math.max(1, endPage - maxButtons + 1);
+            }
+            
+            for (let i = startPage; i <= endPage; i++) {
+                const pageButton = document.createElement('button');
+                pageButton.textContent = i;
+                if (i === currentPage) {
+                    pageButton.classList.add('active');
+                }
+                pageButton.addEventListener('click', () => {
+                    currentPage = i;
+                    updateTable();
+                });
+                paginationDiv.appendChild(pageButton);
+            }
+            
+            // Next button
+            const nextButton = document.createElement('button');
+            nextButton.innerHTML = '&raquo;';
+            nextButton.disabled = currentPage === totalPages;
+            nextButton.addEventListener('click', () => {
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    updateTable();
+                }
+            });
+            paginationDiv.appendChild(nextButton);
+        }
+        
+        // Function to add event listeners to action buttons
+        function addActionButtonListeners() {
+            // Reject buttons
+            document.querySelectorAll('.btn-delete').forEach(button => {
+                button.addEventListener('click', () => {
+                    const id = button.getAttribute('data-id');
+                    const requestId = button.getAttribute('data-request-id');
+                    
+                    // Show confirmation modal
+                    const modal = document.getElementById('confirmModal');
+                    const modalMessage = document.getElementById('modalMessage');
+                    modalMessage.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Are you sure you want to reject request <span class="request-id">${requestId}</span>? This cannot be undone.`;
+                    
+                    modal.style.display = 'block';
+                    
+                    // Setup confirm action
+                    document.getElementById('confirmAction').onclick = () => {
+                        rejectRequest(id);
+                        modal.style.display = 'none';
+                    };
+                    
+                    // Setup cancel action
+                    document.getElementById('cancelAction').onclick = () => {
+                        modal.style.display = 'none';
+                    };
+                    
+                    // Close modal when clicking X
+                    document.getElementById('closeModal').onclick = () => {
+                        modal.style.display = 'none';
+                    };
+                    
+                    // Close modal when clicking outside
+                    window.onclick = (event) => {
+                        if (event.target === modal) {
+                            modal.style.display = 'none';
+                        }
+                    };
+                });
+            });
+        }
+        
+        // Function to reject a scheduled request
+        function rejectRequest(id) {
+            const token = localStorage.getItem('userToken');
+            if (!token) {
+                showMessage("<i class='fas fa-exclamation-circle'></i> Authentication error. Please log in again.", "error");
+                return;
+            }
+            
+            fetch(`/api/update_status`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    user_ids: [id],
+                    status: 'rejected'
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                showMessage("<i class='fas fa-check-circle'></i> Request rejected successfully!", "success");
+                
+                // Refresh the data
+                fetchScheduledRequests();
+            })
+            .catch(error => {
+                console.error('Error rejecting request:', error);
+                showMessage("<i class='fas fa-exclamation-circle'></i> Error rejecting request. Please try again.", "error");
+            });
+        }
+        
+        // Function to set up event listeners
+        function setupEventListeners() {
+            // Sort headers
+            document.querySelectorAll('th[data-sort]').forEach(header => {
+                header.addEventListener('click', () => {
+                    const column = header.getAttribute('data-sort');
+                    
+                    // Toggle direction if clicking the same column
+                    if (column === currentSortColumn) {
+                        currentSortDirection = currentSortDirection === 'asc' ? 'desc' : 'asc';
+                    } else {
+                        currentSortColumn = column;
+                        currentSortDirection = 'asc';
+                    }
+                    
+                    // Update sort indicators
+                    document.querySelectorAll('th').forEach(th => {
+                        th.classList.remove('sorted-asc', 'sorted-desc');
+                    });
+                    
+                    header.classList.add(`sorted-${currentSortDirection}`);
+                    
+                    // Apply sorting and update table
+                    applyFiltersAndSort();
+                });
+            });
+            
+            // Date filter inputs
+            document.getElementById('startDateFilter').addEventListener('change', () => {
+                currentPage = 1;
+                applyFiltersAndSort();
+            });
+            
+            document.getElementById('endDateFilter').addEventListener('change', () => {
+                currentPage = 1;
+                applyFiltersAndSort();
+            });
+            
+            // Payment type filter dropdown
+            document.getElementById('paymentFilter').addEventListener('change', () => {
+                currentPage = 1;
+                applyFiltersAndSort();
+            });
+            
+            // Search input
+            document.getElementById('searchInput').addEventListener('input', () => {
+                currentPage = 1;
+                applyFiltersAndSort();
+            });
+            
+            // Close modals when clicking outside
+            window.addEventListener('click', (event) => {
+                if (event.target === document.getElementById('confirmModal')) {
+                    document.getElementById('confirmModal').style.display = 'none';
+                }
+            });
+            
+            // Fetch data on load
+            fetchScheduledRequests();
+            
+            // Set up auto refresh every 5 seconds
+            setInterval(fetchScheduledRequests, 5000);
+        }
+        
+        // Function to show "no data" message
+        function showNoData(message) {
+            document.getElementById('tableContainer').innerHTML = `<div class="no-data">${message}</div>`;
+            
+            // Hide pagination
+            document.getElementById('pagination').innerHTML = '';
+        }
+        
+        // Function to show message
+        function showMessage(text, type) {
+            const messageBox = document.getElementById('message');
+            messageBox.innerHTML = text;
+            messageBox.className = `message ${type}`;
+            messageBox.classList.remove('hidden');
+            
+            // Auto-hide success messages after 3 seconds
+            if (type === 'success') {
+                setTimeout(() => {
+                    messageBox.classList.add('hidden');
+                }, 3000);
+            }
+        }
+    </script>
+</body>
+</html>

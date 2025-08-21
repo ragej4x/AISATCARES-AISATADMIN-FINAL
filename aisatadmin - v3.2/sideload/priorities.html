@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Priority Users Management</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            /* Only 3 colors as requested */
+            --primary: #3498db;
+            --secondary: #2c3e50; 
+            --white: #ffffff;
+
+            /* Derived colors (shades and transparency of the 3 base colors) */
+            --light-bg: #f5f8fb;
+            --sidebar-active: rgba(52, 152, 219, 0.1);
+            --border-color: rgba(44, 62, 80, 0.1);
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --text-muted: rgba(44, 62, 80, 0.6);
+            --input-bg: var(--white);
+            --input-border: rgba(44, 62, 80, 0.2);
+            --table-even-row: #f8f9fa;
+            --table-hover: #e9ecef;
+        }
+
+        [data-theme="dark"] {
+            --light-bg: #16213e;
+            --sidebar-active: rgba(76, 201, 240, 0.1);
+            --border-color: #2a2a4a;
+            --text-muted: #a0aec0;
+            --secondary: #e6e6e6;
+            --input-bg: #1a1a2e;
+            --input-border: #2a2a4a;
+            --primary: #4cc9f0;
+            --white: #1a1a2e;
+            --table-even-row: #252525;
+            --table-hover: #2a2a4a;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--light-bg);
+            color: var(--secondary);
+            transition: background-color 0.3s, color 0.3s;
+            overflow-x: hidden;
+        }
+
+        .main-content {
+            padding: 30px;
+            overflow-y: auto;
+        }
+
+        .dashboard-header {
+            margin-bottom: 24px;
+        }
+
+        .dashboard-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--secondary);
+            margin-bottom: 16px;
+        }
+
+        .settings-section {
+            background-color: var(--white);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .settings-section h2 {
+            color: var(--secondary);
+            margin-bottom: 20px;
+            font-weight: 500;
+            font-size: 18px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--input-border);
+            border-radius: 6px;
+            background-color: var(--input-bg);
+            color: var(--secondary);
+            font-size: 14px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .form-group input:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+        }
+
+        .form-row {
+            display: flex;
+            flex-wrap: wrap;
+            margin: 0 -10px 20px;
+            align-items: flex-end;
+        }
+
+        .form-row .form-group {
+            flex: 1 1 200px;
+            margin: 0 10px 10px;
+        }
+
+        .btn {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 14px;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: var(--white);
+        }
+
+        .btn-primary:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        .btn-danger {
+            background-color: var(--danger-color);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            opacity: 0.9;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+        }
+
+        tr:nth-child(even) {
+            background-color: var(--table-even-row);
+        }
+
+        tr:hover {
+            background-color: var(--table-hover);
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .message {
+            padding: 12px 16px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            border-left: 4px solid;
+            display: flex;
+            align-items: center;
+        }
+
+        .message.error {
+            background-color: rgba(231, 76, 60, 0.1);
+            border-color: var(--danger-color);
+            color: var(--danger-color);
+        }
+
+        .message.success {
+            background-color: rgba(46, 204, 113, 0.1);
+            border-color: var(--success-color);
+            color: var(--success-color);
+        }
+
+        .message.info {
+            background-color: rgba(52, 152, 219, 0.1);
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .message i {
+            margin-right: 10px;
+            font-size: 16px;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .search-box {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 10px 10px 10px 35px;
+            border: 1px solid var(--input-border);
+            border-radius: 6px;
+            background-color: var(--input-bg);
+            color: var(--secondary);
+            font-size: 14px;
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+        }
+
+        /* Priority badge */
+        .priority-badge {
+            background-color: var(--warning-color);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+            display: inline-block;
+            margin-left: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 20px;
+            }
+            
+            .form-row {
+                flex-direction: column;
+            }
+            
+            .form-row .form-group {
+                flex: 1 1 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-content">
+        <div class="dashboard-header">
+            <h1 class="dashboard-title">Priority Users Management</h1>
+        </div>
+        
+        <div id="message" class="hidden message"></div>
+        
+        <div class="settings-section">
+            <h2><i class="fas fa-star"></i> Add Priority User</h2>
+            <form id="addPriorityForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="idno">Student ID Number</label>
+                        <input type="text" id="idno" name="idno" required placeholder="Enter student ID number">
+                    </div>
+                    <div class="form-group" style="flex: 0 0 auto;">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-plus-circle"></i> Add Priority User
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+        
+        <div class="settings-section">
+            <h2><i class="fas fa-users"></i> Priority Users</h2>
+            
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" placeholder="Search users...">
+            </div>
+            
+            <table id="priorityUsersTable">
+                <thead>
+                    <tr>
+                        <th>ID Number</th>
+                        <th>Name</th>
+                        <th>Level</th>
+                        <th>Course/Strand</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="priorityUsersTableBody">
+                    <!-- Priority user data will be populated here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // Define baseUrl for API calls globally
+        const baseUrl = "https://jimboyaczon.pythonanywhere.com";
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            // Apply saved theme
+            applyTheme();
+            
+            const addPriorityForm = document.getElementById('addPriorityForm');
+            const messageBox = document.getElementById('message');
+            const searchInput = document.getElementById('searchInput');
+            
+            // Fetch priority users on page load
+            fetchPriorityUsers();
+            
+            // Set up auto refresh every 3 seconds
+            setInterval(fetchPriorityUsers, 3000);
+            
+            // Add priority user form submission
+            addPriorityForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const idno = document.getElementById('idno').value;
+                if (!idno) {
+                    showMessage('<i class="fas fa-exclamation-circle"></i> Please enter a student ID number', 'error');
+                    return;
+                }
+                
+                // Get token from localStorage
+                const token = localStorage.getItem('userToken');
+                if (!token) {
+                    showMessage('<i class="fas fa-exclamation-circle"></i> Authentication required. Please log in again.', 'error');
+                    return;
+                }
+                
+                // Show loading message
+                showMessage('<i class="fas fa-spinner fa-spin"></i> Adding priority user...', 'info');
+                
+                // Call API to add priority user
+                fetch(`${baseUrl}/api/add_priority_user`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ idno: idno })
+                })
+                .then(response => {
+                    console.log('Response status:', response.status);
+                    if (!response.ok) {
+                        return response.json().then(data => {
+                            console.error('Error response:', data);
+                            throw new Error(data.error || 'Failed to add priority user');
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    showMessage('<i class="fas fa-check-circle"></i> Priority user added successfully!', 'success');
+                    addPriorityForm.reset();
+                    
+                    // Refresh the priority users list
+                    fetchPriorityUsers();
+                })
+                .catch(error => {
+                    console.error('Error adding priority user:', error);
+                    showMessage(`<i class="fas fa-exclamation-circle"></i> ${error.message}`, 'error');
+                });
+            });
+            
+            // Search functionality
+            searchInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                const rows = document.querySelectorAll('#priorityUsersTableBody tr');
+                
+                rows.forEach(row => {
+                    const idno = row.cells[0].textContent.toLowerCase();
+                    const name = row.cells[1].textContent.toLowerCase();
+                    const level = row.cells[2].textContent.toLowerCase();
+                    const course = row.cells[3].textContent.toLowerCase();
+                    
+                    if (idno.includes(searchTerm) || name.includes(searchTerm) || 
+                        level.includes(searchTerm) || course.includes(searchTerm)) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            });
+        });
+        
+        // Fetch priority users from API
+        function fetchPriorityUsers() {
+            const token = localStorage.getItem('userToken');
+            if (!token) {
+                showMessage('<i class="fas fa-exclamation-circle"></i> Authentication required. Please log in again.', 'error');
+                return;
+            }
+            
+            // Show loading message in table
+            document.getElementById('priorityUsersTableBody').innerHTML = '<tr><td colspan="5" style="text-align:center;"><i class="fas fa-spinner fa-spin"></i> Loading priority users...</td></tr>';
+            
+            fetch(`${baseUrl}/api/priority_users`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+            .then(response => {
+                console.log('Response status:', response.status);
+                if (!response.ok) {
+                    return response.json().then(data => {
+                        console.error('Error response:', data);
+                        throw new Error(data.error || 'Failed to fetch priority users');
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                renderPriorityUsers(data);
+            })
+            .catch(error => {
+                console.error('Error fetching priority users:', error);
+                document.getElementById('priorityUsersTableBody').innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--danger-color);"><i class="fas fa-exclamation-triangle"></i> Error: ${error.message}</td></tr>`;
+            });
+        }
+        
+        // Render priority users to table
+        function renderPriorityUsers(users) {
+            const tableBody = document.getElementById('priorityUsersTableBody');
+            
+            if (!users || users.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="5" style="text-align:center;"><i class="fas fa-info-circle"></i> No priority users found</td></tr>';
+                return;
+            }
+            
+            tableBody.innerHTML = '';
+            
+            users.forEach(user => {
+                const row = document.createElement('tr');
+                
+                // Determine course/strand based on level
+                let courseStrand = '-';
+                if (user.level === 'College') {
+                    courseStrand = user.course || '-';
+                } else if (user.level === 'SHS') {
+                    courseStrand = user.strand || '-';
+                }
+                
+                row.innerHTML = `
+                    <td>${user.idno || '-'}</td>
+                    <td>${user.name || '-'}</td>
+                    <td>${user.level || '-'}</td>
+                    <td>${courseStrand}</td>
+                    <td class="actions">
+                        <button class="btn btn-danger" onclick="removePriorityUser('${user.idno}')">
+                            <i class="fas fa-trash"></i> Remove
+                        </button>
+                    </td>
+                `;
+                
+                tableBody.appendChild(row);
+            });
+        }
+        
+        // Remove priority user
+        function removePriorityUser(idno) {
+            if (!confirm(`Are you sure you want to remove priority status from user ${idno}?`)) {
+                return;
+            }
+            
+            const token = localStorage.getItem('userToken');
+            if (!token) {
+                showMessage('<i class="fas fa-exclamation-circle"></i> Authentication required. Please log in again.', 'error');
+                return;
+            }
+            
+            fetch(`${baseUrl}/api/remove_priority_user`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ idno: idno })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(data => {
+                        throw new Error(data.error || 'Failed to remove priority user');
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                showMessage('<i class="fas fa-check-circle"></i> Priority user removed successfully!', 'success');
+                
+                // Refresh the priority users list
+                fetchPriorityUsers();
+            })
+            .catch(error => {
+                console.error('Error removing priority user:', error);
+                showMessage(`<i class="fas fa-exclamation-circle"></i> ${error.message}`, 'error');
+            });
+        }
+        
+        // Show message in the message box
+        function showMessage(text, type) {
+            const messageBox = document.getElementById('message');
+            messageBox.innerHTML = text;
+            messageBox.className = `message ${type}`;
+            messageBox.style.display = 'block';
+            
+            // Auto-hide success messages after 3 seconds
+            if (type === 'success') {
+                setTimeout(() => {
+                    messageBox.style.display = 'none';
+                }, 3000);
+            }
+        }
+        
+        // Apply theme from localStorage
+        function applyTheme() {
+            const savedTheme = localStorage.getItem('adminTheme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        }
+    </script>
+</body>
+</html>

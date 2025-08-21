@@ -1,0 +1,1447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advertisement Management</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            /* Only 3 colors as requested */
+            --primary: #3498db;
+            --secondary: #2c3e50; 
+            --white: #ffffff;
+
+            /* Derived colors (shades and transparency of the 3 base colors) */
+            --light-bg: #f5f8fb;
+            --sidebar-active: rgba(52, 152, 219, 0.1);
+            --border-color: rgba(44, 62, 80, 0.1);
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --text-muted: rgba(44, 62, 80, 0.6);
+            --input-bg: var(--white);
+            --input-border: rgba(44, 62, 80, 0.2);
+            --card-header-bg: var(--primary);
+            --card-bg: var(--white);
+            --btn-bg: var(--primary);
+            --btn-hover: rgba(52, 152, 219, 0.8);
+        }
+        
+        [data-theme="dark"] {
+            --light-bg: #16213e;
+            --sidebar-active: rgba(76, 201, 240, 0.1);
+            --border-color: #2a2a4a;
+            --text-muted: #a0aec0;
+            --secondary: #e6e6e6;
+            --input-bg: #1a1a2e;
+            --input-border: #2a2a4a;
+            --primary: #4cc9f0;
+            --white: #1a1a2e;
+            --card-header-bg: #1a1a2e;
+            --card-bg: #16213e;
+            --btn-bg: #4cc9f0;
+            --btn-hover: rgba(76, 201, 240, 0.8);
+            --success-color: #a9dc76;
+            --danger-color: #fc5d7c;
+            --warning-color: #ffcc66;
+        }
+        
+        body {
+            background-color: var(--light-bg);
+            color: var(--secondary);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        
+        .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            overflow: hidden;
+            background-color: var(--card-bg);
+        }
+        
+        .card-header {
+            background-color: var(--card-header-bg);
+            color: var(--white);
+            font-weight: bold;
+            padding: 15px 20px;
+            border: none;
+        }
+        
+        .btn-primary {
+            background-color: var(--btn-bg);
+            border-color: var(--btn-bg);
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--btn-hover);
+            border-color: var(--btn-hover);
+        }
+        
+        .btn-warning {
+            background-color: var(--warning-color);
+            border-color: var(--warning-color);
+        }
+        
+        .btn-warning:hover {
+            background-color: var(--warning-color);
+            opacity: 0.9;
+        }
+        
+        .btn-danger {
+            background-color: var(--danger-color);
+            border-color: var(--danger-color);
+        }
+        
+        .btn-danger:hover {
+            background-color: var(--danger-color);
+            opacity: 0.9;
+        }
+        
+        .btn-success {
+            background-color: var(--success-color);
+            border-color: var(--success-color);
+        }
+        
+        .btn-success:hover {
+            background-color: var(--success-color);
+            opacity: 0.9;
+        }
+        
+        .ads-list {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        
+        .ad-item {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin-bottom: 15px;
+            overflow: hidden;
+            background-color: var(--card-bg);
+        }
+        
+        .ad-media {
+            height: 200px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--input-bg);
+        }
+        
+        .ad-media img, .ad-media video {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+        
+        .ad-info {
+            padding: 15px;
+            color: var(--secondary);
+        }
+        
+        .ad-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: var(--secondary);
+        }
+        
+        .ad-duration {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+        
+        .ad-controls {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 15px;
+            background-color: var(--input-bg);
+            border-top: 1px solid var(--border-color);
+        }
+        
+        .preview-container {
+            width: 100%;
+            height: 300px;
+            border: 1px dashed var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            overflow: hidden;
+            background-color: var(--input-bg);
+        }
+        
+        .preview-container img, .preview-container video {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+        
+        .file-input-container {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+        }
+        
+        .file-input-container input[type=file] {
+            position: absolute;
+            top: 0;
+            right: 0;
+            min-width: 100%;
+            min-height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+        
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+        
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--border-color);
+            transition: .4s;
+            border-radius: 34px;
+        }
+        
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: var(--white);
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .slider {
+            background-color: var(--success-color);
+        }
+        
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+        
+        .loading {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            color: white;
+        }
+        
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        .custom-control-input:checked~.custom-control-label::before {
+            background-color: var(--success-color);
+            border-color: var(--success-color);
+        }
+        
+        .custom-switch .custom-control-label::before {
+            background-color: var(--input-border);
+        }
+        
+        .form-group label {
+            color: var(--secondary);
+        }
+        
+        .form-control {
+            background-color: var(--input-bg);
+            color: var(--secondary);
+            border-color: var(--input-border);
+        }
+        
+        .form-control:focus {
+            background-color: var(--input-bg);
+            color: var(--secondary);
+            border-color: var(--primary);
+            box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+        }
+        
+        .text-muted {
+            color: var(--text-muted) !important;
+        }
+        
+        .list-group-item {
+            background-color: var(--card-bg);
+            border-color: var(--border-color);
+            color: var(--secondary);
+        }
+        
+        .btn-light {
+            background-color: var(--input-bg);
+            border-color: var(--border-color);
+            color: var(--secondary);
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+    <script src="theme.js"></script>
+</head>
+<body>
+    <div class="loading" id="loading-overlay">
+        <div class="text-center">
+            <div class="spinner mb-3"></div>
+            <div>Processing... Please wait</div>
+        </div>
+    </div>
+
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="row mb-4 mt-3">
+                    <div class="col-md-12">
+                        <h2><i class="fas fa-ad"></i> Announcement Management</h2>
+                        <p class="text-muted">Manage announcements and advertisements for TV display screens</p>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-5">
+                        <div class="card">
+                            <div class="card-header">
+                                <i class="fas fa-plus-circle"></i> Add New Announcement
+                            </div>
+                            <div class="card-body">
+                                <form id="add-ad-form">
+                                    <div class="form-group">
+                                        <label for="ad-title">Title</label>
+                                        <input type="text" class="form-control" id="ad-title" placeholder="Enter announcement title" required>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="ad-duration">Display Duration (seconds)</label>
+                                        <input type="number" class="form-control" id="ad-duration" min="3" value="10" required>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label>Media File</label>
+                                        <div class="preview-container mb-2" id="preview-container">
+                                            <div class="text-center text-muted">
+                                                <i class="fas fa-cloud-upload-alt fa-3x mb-2"></i>
+                                                <p>Preview will appear here</p>
+                                            </div>
+                                        </div>
+                                        <div class="file-input-container">
+                                            <button type="button" class="btn btn-outline-primary btn-block">
+                                                <i class="fas fa-file-upload"></i> Select File
+                                            </button>
+                                            <input type="file" id="ad-file" accept="image/*,video/*" required>
+                                        </div>
+                                        <small class="form-text text-muted">Supported formats: JPG, PNG, GIF, MP4, WebM (Max size: 10MB)</small>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <div class="custom-control custom-switch">
+                                            <input type="checkbox" class="custom-control-input" id="ad-active" checked>
+                                            <label class="custom-control-label" for="ad-active">Active (Display immediately after upload)</label>
+                                        </div>
+                                    </div>
+                                    
+                                    <button type="submit" class="btn btn-primary btn-block">
+                                        <i class="fas fa-save"></i> Save Announcement
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+
+
+                    </div>
+                    
+                    <div class="col-md-7">
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <div>
+                                    <i class="fas fa-list"></i> Current Announcements
+                                </div>
+                                <button id="refresh-ads-btn" class="btn btn-sm btn-light">
+                                    <i class="fas fa-sync"></i> Refresh
+                                </button>
+                            </div>
+                            <div class="card-body">
+                                <div class="ads-list" id="ads-list">
+                                    <div class="text-center text-muted py-5">
+                                        <i class="fas fa-spinner fa-spin fa-2x mb-3"></i>
+                                        <p>Loading announcements...</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                                
+                    </div>
+                </div>
+
+                <!-- Ticker Messages Management Section -->
+                <div class="row mt-4">
+                    <div class="col-md-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <i class="fas fa-scroll"></i> Ticker Messages Management
+                            </div>
+                            <div class="card-body">
+                                <p class="text-muted mb-3">Manage the ticker messages that appear at the bottom of the TV display</p>
+                                
+                                <div id="ticker-messages-container">
+                                    <!-- Messages will be loaded here -->
+                                    <div class="text-center py-3">
+                                        <i class="fas fa-spinner fa-spin"></i> Loading ticker messages...
+                                    </div>
+                                </div>
+                                
+                                <div class="mt-4">
+                                    <div class="d-flex mb-2">
+                                        <button id="add-ticker-message" class="btn btn-sm btn-success mr-2">
+                                            <i class="fas fa-plus"></i> Add Message
+                                        </button>
+                                        <button id="save-ticker-messages" class="btn btn-sm btn-primary">
+                                            <i class="fas fa-save"></i> Save All Messages
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Dropbox SDK -->
+    <script src="https://unpkg.com/dropbox@10.34.0/dist/Dropbox-sdk.min.js"></script>
+    
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    
+    
+    <script>
+        // Dropbox configuration
+        const CLIENT_ID = 'z14qe9b5zsn2zj2';
+        
+        // Dropbox API key for direct app access - not using OAuth flow
+        // This is the short-lived access token that will be refreshed as needed
+        const DROPBOX_TOKEN = 'sl.u.AF6vi3jWUMmaaIpujo1rY_rP64nckKBBsZJNUesE20UKHYzIL9FNj18bfeszUY4yQR4wFutFxV5_1cap1HtDFshSkkNPLXBKRpqkmSCAAcXfO78GzmnK2aSu5gFO9T1LKtk3wNEf-nurv6rUKIBN0QDzfoUdskx1w-UAtJ2JXXkuzKhKzdXCO8ZFOT-1CSCh8R5sl-xKWFqcXfStuQVU8EDZMMFUue4PEZ941ZJ_NHKiw7NqTHbeSYOIZ1U0CtbSgLp_tVK7twWD-At_2OFOWGCVqKjYvehqfDYJSO6aBFq-mPhuPDeTh2tjgSIckMKUkFZcn7b2p9C8ZwP9eIYMeyJzDMyEflXJc3VzgrND3CT6wuCRwlpQQ1Ouhc6PKcvCXryYOtlRO7Cc1ELwcRZG8hue7rgQG7H2qPl7lGFG6Fph4AhrPTUIG4aNKE7Yx1mYOhviOIR4MrxFYivJthBVtSag4R55oGw9FIsfnaetLyzB0n8hMNcksaQQrOEeN2bf1BE7MD1Vc8unVurGypKx8Dir6P9QmbM0LGaps7W4udqY7vcYNHfCWwWylsoZDkTDmrbP-B78q8z6gjsjLKLv1LB2mMKRdonank_YCSYSIzmxrPu8-DxqiTFbb-goHi63iIeljCpp1u-fqDaJ9ZvHEBBwQ_TShpcIJKVDyinz7e2e5-1hya_5XOXyE3MCmKTYL6i03ECdjdaECGV86l0ZeR1iVkOk39rRZT-CxkQRWZae86GLWF05df7s9K7XPkqXN6iT2Il5C0NPje-piQMP1snGqEaPNd8p1bpHk7II-nFGeiBj3qNaHvOv-qyPPj7pm81INjBo5MS9MVnP_R2oZTH00WTgE5uv-odV5oRKQZE7XIJJWG3nsBWilCyIy53AdWuXgMx_6YOuTB3MxwQ-JdL0n234PyncXZpLV8jA0ftcrb7r3qR898fIXO6AHvAvMqdJ0mTYWf7vezaEMqVW8jS86EpPfjfn9cinOGjBGDA9EQbx1ocd7gm56thPPuOp1vEKLJaxNR_Uf4XezlWjcQoP0_CJtg8gq4aYqO2OzVSoJiijkhGT4HeKKGsJg6eGvwCI8D4jA5ixsNAh125djoJN-36BNYOnFJBVFh0nCObrpzXXRChAHTpNOMbVJuen8lvI_NAG07GDoTw-cYhAOCnM79k5RVJyv4vTJIU__bCZnMz3UP47EhVvfKsOTzgTXnH_hzCVIXrA3jM8SxwEIh4FHIbsaD6cPOHsA8sTMToQ976FJooOnBDuvT7WjfqkrpfEDcCoVPeDJviN6MJ5W7Zw';
+        
+        let ACCESS_TOKEN = '';
+        
+        // Initialize Dropbox client
+        let dbx = null;
+        let dropboxInitialized = false;
+        
+        function initDropbox() {
+            try {
+                // Use direct token instead of trying to get from localStorage
+                ACCESS_TOKEN = DROPBOX_TOKEN;
+                
+                console.log("Using direct access token for Dropbox");
+                
+                if (!ACCESS_TOKEN) {
+                    throw new Error("No access token available");
+                }
+
+                // Initialize Dropbox client with token
+                dbx = new Dropbox.Dropbox({
+                    clientId: CLIENT_ID,
+                    accessToken: ACCESS_TOKEN
+                });
+                
+                console.log("Dropbox client initialized successfully");
+                dropboxInitialized = true;
+            } catch (error) {
+                console.error("Failed to initialize Dropbox client:", error);
+                alert("There was an error connecting to Dropbox. Please contact your system administrator.");
+            }
+        }
+        
+        // Path in Dropbox where files will be stored
+        const DROPBOX_FOLDER_PATH = '/aisat_announcements';
+        
+        let announcements = [];
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initialize Dropbox
+            initDropbox();
+            
+            // Setup theme based on localStorage or default
+            applyTheme();
+            
+            // Set up file input preview
+            const fileInput = document.getElementById('ad-file');
+            const previewContainer = document.getElementById('preview-container');
+            
+            fileInput.addEventListener('change', function() {
+                if (this.files && this.files[0]) {
+                    const file = this.files[0];
+                    const reader = new FileReader();
+                    
+                    reader.onload = function(e) {
+                        previewContainer.innerHTML = '';
+
+                        if (file.type.startsWith('image/')) {
+                            const img = document.createElement('img');
+                            img.src = e.target.result;
+                            previewContainer.appendChild(img);
+                        } else if (file.type.startsWith('video/')) {
+                            const video = document.createElement('video');
+                            video.src = e.target.result;
+                            video.controls = true;
+                            video.autoplay = false;
+                            previewContainer.appendChild(video);
+                        }
+                    };  
+                    
+                    reader.readAsDataURL(file);
+                }
+            });
+            
+            // Handle form submission
+            const addAdForm = document.getElementById('add-ad-form');
+            addAdForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                // Show loading overlay
+                document.getElementById('loading-overlay').style.display = 'flex';
+                
+                try {
+                    // Get form values
+                    const title = document.getElementById('ad-title').value;
+                    const duration = document.getElementById('ad-duration').value;
+                    const file = document.getElementById('ad-file').files[0];
+                    const isActive = document.getElementById('ad-active').checked;
+                    
+                    if (!file) {
+                        alert('Please select a file to upload');
+                        document.getElementById('loading-overlay').style.display = 'none';
+                        return;
+                    }
+                    
+                    // Check file size (max 10MB)
+                    if (file.size > 10 * 1024 * 1024) {
+                        alert('File size exceeds 10MB limit');
+                        document.getElementById('loading-overlay').style.display = 'none';
+                        return;
+                    }
+                    
+                    // Check if Dropbox is initialized
+                    if (!dbx || !dropboxInitialized) {
+                        alert('Dropbox connection not available. Please refresh the page and try again.');
+                        document.getElementById('loading-overlay').style.display = 'none';
+                        return;
+                    }
+
+                    // Generate a unique filename
+                    const timestamp = new Date().getTime();
+                    const fileExtension = file.name.split('.').pop();
+                    const uniqueFilename = `${timestamp}_${title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.${fileExtension}`;
+                    const filePath = `${DROPBOX_FOLDER_PATH}/${uniqueFilename}`;
+                    
+                    // Determine file type
+                    const fileType = file.type.startsWith('image/') ? 'image' : 'video';
+                    
+                    // Convert file to ArrayBuffer for upload
+                    const fileArrayBuffer = await file.arrayBuffer();
+                    
+                    // Check if folder exists, create if not
+                    try {
+                        await dbx.filesListFolder({ path: DROPBOX_FOLDER_PATH });
+                    } catch (error) {
+                        if (error.status === 409) {
+                            // Folder doesn't exist, create it
+                            await dbx.filesCreateFolderV2({ path: DROPBOX_FOLDER_PATH });
+                        } else if (error.status === 401) {
+                            // Authentication error
+                            alert('Authentication error. Please refresh the page and try again.');
+                            document.getElementById('loading-overlay').style.display = 'none';
+                            return;
+                        } else {
+                            throw error;
+                        }
+                    }
+                    
+                    // Upload the file
+                    const uploadResult = await dbx.filesUpload({
+                        path: filePath,
+                        contents: fileArrayBuffer,
+                        mode: 'overwrite'
+                    });
+                    
+                    // Create a shared link for the file
+                    const shareResult = await dbx.sharingCreateSharedLinkWithSettings({
+                        path: uploadResult.result.path_lower
+                    });
+                    
+                    // Convert the shared link to a direct download link
+                    const sharedLink = shareResult.result.url;
+                    // Replace dl=0 with raw=1 for direct link
+                    const directLink = sharedLink.replace('www.dropbox.com', 'dl.dropboxusercontent.com').replace('?dl=0', '');
+                    
+                    // Create announcement object
+                    const newAnnouncement = {
+                        id: timestamp.toString(),
+                        title: title,
+                        duration: parseInt(duration),
+                        fileType: fileType,
+                        fileUrl: directLink,
+                        dropboxPath: filePath,
+                        isActive: isActive,
+                        dateAdded: new Date().toISOString()
+                    };
+                    
+                    // Add to local array
+                    announcements.push(newAnnouncement);
+                    
+                    // Save to localStorage
+                    saveAnnouncements();
+                    
+                    // Reset form
+                    addAdForm.reset();
+                    previewContainer.innerHTML = `
+                        <div class="text-center text-muted">
+                            <i class="fas fa-cloud-upload-alt fa-3x mb-2"></i>
+                            <p>Preview will appear here</p>
+                        </div>
+                    `;
+                    
+                    // Refresh the list
+                    displayAnnouncements();
+                    
+                    alert('Announcement added successfully!');
+                    
+                } catch (error) {
+                    console.error('Error adding announcement:', error);
+                    
+                    // More user-friendly error message based on the type of error
+                    if (error.status === 401) {
+                        alert('Authentication error. Your session may have expired. Please refresh the page and try again.');
+                    } else if (error.status === 429) {
+                        alert('Too many requests to Dropbox. Please try again in a few minutes.');
+                    } else if (error.status === 507) {
+                        alert('Dropbox storage is full. Please free up space or use a different account.');
+                    } else if (error.message && error.message.includes('NetworkError')) {
+                        alert('Network error. Please check your internet connection and try again.');
+                    } else {
+                        alert('Error adding announcement. Please try again later.');
+                    }
+                } finally {
+                    document.getElementById('loading-overlay').style.display = 'none';
+                }
+            });
+            
+            // Set up refresh button
+            document.getElementById('refresh-ads-btn').addEventListener('click', () => {
+                loadAnnouncements();
+            });
+            
+            // Initial load of announcements
+            loadAnnouncements();
+            
+            // Initialize ticker messages
+            initTickerMessages();
+        });
+        
+        // Apply theme settings
+        function applyTheme() {
+            const theme = localStorage.getItem('adminTheme') || 'light';
+            document.body.setAttribute('data-theme', theme);
+            
+            if (theme === 'dark') {
+                document.body.classList.add('dark-mode');
+            } else {
+                document.body.classList.remove('dark-mode');
+            }
+        }
+        
+        // Load announcements from localStorage
+        async function loadAnnouncements() {
+            document.getElementById('ads-list').innerHTML = `
+                <div class="text-center text-muted py-5">
+                    <i class="fas fa-spinner fa-spin fa-2x mb-3"></i>
+                    <p>Loading announcements...</p>
+                </div>
+            `;
+            
+            try {
+                // Just use localStorage directly
+                loadFromLocalStorage();
+            } catch (error) {
+                console.error('Error loading announcements:', error);
+                announcements = [];
+                displayAnnouncements();
+            }
+        }
+        
+        // Load announcements from localStorage
+        function loadFromLocalStorage() {
+            const storedAnnouncements = localStorage.getItem('aisatAnnouncements');
+            if (storedAnnouncements) {
+                try {
+                    announcements = JSON.parse(storedAnnouncements);
+                } catch (error) {
+                    console.error('Error parsing announcements:', error);
+                    announcements = [];
+                }
+            } else {
+                announcements = [];
+            }
+            
+            displayAnnouncements();
+        }
+        
+        // Save announcements to localStorage
+        function saveAnnouncements() {
+            // Save to both keys for maximum compatibility
+            localStorage.setItem('aisatAnnouncements', JSON.stringify(announcements));
+            
+            // Also explicitly save to tvDisplayAnnouncements to ensure TV display can access it
+            localStorage.setItem('tvDisplayAnnouncements', JSON.stringify(announcements));
+            
+            console.log('Announcements saved to localStorage:', announcements.length);
+        }
+        
+        // Display announcements in the UI
+        function displayAnnouncements() {
+            const adsList = document.getElementById('ads-list');
+            
+            if (announcements.length === 0) {
+                adsList.innerHTML = `
+                    <div class="text-center text-muted py-5">
+                        <i class="fas fa-exclamation-circle fa-2x mb-3"></i>
+                        <p>No announcements found</p>
+                        <p>Add your first announcement using the form</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Sort by date added (newest first)
+            const sortedAnnouncements = [...announcements].sort((a, b) => {
+                return new Date(b.dateAdded) - new Date(a.dateAdded);
+            });
+            
+            let html = '';
+            
+            sortedAnnouncements.forEach(ad => {
+                html += `
+                    <div class="ad-item" data-id="${ad.id}">
+                        <div class="ad-media">
+                            ${ad.fileType === 'image' 
+                                ? `<img src="${ad.fileUrl}" alt="${ad.title}" loading="lazy">` 
+                                : `<video src="${ad.fileUrl}" controls></video>`
+                            }
+                        </div>
+                        <div class="ad-info">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h5 class="ad-title m-0">${ad.title}</h5>
+                                <div class="badge badge-${ad.isActive ? 'success' : 'secondary'}">
+                                    ${ad.isActive ? 'Active' : 'Inactive'}
+                                </div>
+                            </div>
+                            <div class="ad-duration">
+                                <i class="far fa-clock"></i> ${ad.duration} seconds
+                            </div>
+                            <div class="text-muted small">
+                                Added: ${new Date(ad.dateAdded).toLocaleDateString()}
+                            </div>
+                        </div>
+                        <div class="ad-controls">
+                            <div class="custom-control custom-switch">
+                                <input type="checkbox" class="custom-control-input toggle-active" 
+                                    id="toggle-${ad.id}" ${ad.isActive ? 'checked' : ''}>
+                                <label class="custom-control-label" for="toggle-${ad.id}">
+                                    Display on TV
+                                </label>
+                            </div>
+                            <button class="btn btn-sm btn-danger delete-ad">
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            adsList.innerHTML = html;
+            
+            // Add event listeners to toggle buttons
+            adsList.querySelectorAll('.toggle-active').forEach(toggle => {
+                toggle.addEventListener('change', async function() {
+                    const adId = this.id.replace('toggle-', '');
+                    const isActive = this.checked;
+                    
+                    // Find the announcement
+                    const adIndex = announcements.findIndex(ad => ad.id === adId);
+                    if (adIndex >= 0) {
+                        announcements[adIndex].isActive = isActive;
+                        
+                        // Update UI
+                        const adElement = document.querySelector(`.ad-item[data-id="${adId}"]`);
+                        const badge = adElement.querySelector('.badge');
+                        badge.className = `badge badge-${isActive ? 'success' : 'secondary'}`;
+                        badge.textContent = isActive ? 'Active' : 'Inactive';
+                        
+                        // Save changes
+                        saveAnnouncements();
+                    }
+                });
+            });
+            
+            // Add event listeners to delete buttons
+            adsList.querySelectorAll('.delete-ad').forEach(button => {
+                button.addEventListener('click', async function() {
+                    if (!confirm('Are you sure you want to delete this announcement?')) {
+                        return;
+                    }
+                    
+                    document.getElementById('loading-overlay').style.display = 'flex';
+                    
+                    try {
+                        const adItem = this.closest('.ad-item');
+                        const adId = adItem.getAttribute('data-id');
+                        
+                        // Find the announcement
+                        const adIndex = announcements.findIndex(ad => ad.id === adId);
+                        if (adIndex >= 0) {
+                            const ad = announcements[adIndex];
+                            
+                            // Delete file from Dropbox if path exists
+                            if (ad.dropboxPath && dbx && dropboxInitialized) {
+                                try {
+                                    await dbx.filesDeleteV2({
+                                        path: ad.dropboxPath
+                                    });
+                                } catch (error) {
+                                    console.error('Error deleting from Dropbox:', error);
+                                    // Continue with deletion even if Dropbox fails
+                                }
+                            }
+                            
+                            // Remove from array
+                            announcements.splice(adIndex, 1);
+                            
+                            // Save changes
+                            saveAnnouncements();
+                            
+                            // Remove from UI
+                            adItem.remove();
+                            
+                            // If no more announcements, show empty message
+                            if (announcements.length === 0) {
+                                displayAnnouncements();
+                            }
+                        }
+                    } catch (error) {
+                        console.error('Error deleting announcement:', error);
+                        alert('Error deleting announcement. Please try again.');
+                    } finally {
+                        document.getElementById('loading-overlay').style.display = 'none';
+                    }
+                });
+            });
+        }
+
+        // Thread functionality
+        // Store threads in a separate array
+        let threads = [];
+
+        // Load threads from localStorage
+        function loadThreads() {
+            const storedThreads = localStorage.getItem('threads');
+            if (storedThreads) {
+                try {
+                    threads = JSON.parse(storedThreads);
+                } catch (error) {
+                    console.error('Error parsing threads:', error);
+                    threads = [];
+                }
+            } else {
+                threads = [];
+            }
+            
+            displayThreads();
+        }
+        
+        // Save threads to localStorage
+        function saveThreads() {
+            localStorage.setItem('threads', JSON.stringify(threads));
+            console.log('Threads saved to localStorage:', threads.length);
+        }
+        
+        // Display threads in the UI
+        function displayThreads() {
+            const threadsList = document.getElementById('threads-list');
+            
+            if (threads.length === 0) {
+                threadsList.innerHTML = `
+                    <div class="text-center text-muted py-5">
+                        <i class="fas fa-exclamation-circle fa-2x mb-3"></i>
+                        <p>No threads found</p>
+                        <p>Add your first thread using the form</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Sort by date added (newest first)
+            const sortedThreads = [...threads].sort((a, b) => {
+                return new Date(b.dateAdded) - new Date(a.dateAdded);
+            });
+            
+            let html = '';
+            
+            sortedThreads.forEach(thread => {
+                let mediaHtml = '';
+                
+                if (thread.type === 'image' && thread.imageUrl) {
+                    mediaHtml = `
+                        <div class="ad-media">
+                            <img src="${thread.imageUrl}" alt="${thread.title}" loading="lazy">
+                        </div>
+                    `;
+                } else if (thread.type === 'facebook') {
+                    mediaHtml = `
+                        <div class="ad-media facebook-embed">
+                            ${thread.facebookEmbed}
+                        </div>
+                    `;
+                }
+                
+                html += `
+                    <div class="ad-item thread-item" data-id="${thread.id}">
+                        ${mediaHtml}
+                        <div class="ad-info">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h5 class="ad-title m-0">${thread.title}</h5>
+                                <div class="badge badge-${thread.isActive ? 'success' : 'secondary'}">
+                                    ${thread.isActive ? 'Active' : 'Inactive'}
+                                </div>
+                            </div>
+                            ${thread.content ? `
+                                <div class="thread-content-preview">
+                                    <p>${thread.content.length > 100 ? thread.content.substring(0, 100) + '...' : thread.content}</p>
+                                </div>
+                            ` : ''}
+                            <div class="text-muted small">
+                                Added: ${new Date(thread.dateAdded).toLocaleDateString()}
+                            </div>
+                        </div>
+                        <div class="ad-controls">
+                            <div class="custom-control custom-switch">
+                                <input type="checkbox" class="custom-control-input toggle-thread-active" 
+                                    id="toggle-thread-${thread.id}" ${thread.isActive ? 'checked' : ''}>
+                                <label class="custom-control-label" for="toggle-thread-${thread.id}">
+                                    Display Thread
+                                </label>
+                            </div>
+                            <button class="btn btn-sm btn-danger delete-thread">
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            threadsList.innerHTML = html;
+            
+            // Add event listeners to toggle buttons
+            threadsList.querySelectorAll('.toggle-thread-active').forEach(toggle => {
+                toggle.addEventListener('change', function() {
+                    const threadId = this.id.replace('toggle-thread-', '');
+                    const isActive = this.checked;
+                    
+                    // Find the thread
+                    const threadIndex = threads.findIndex(thread => thread.id === threadId);
+                    if (threadIndex >= 0) {
+                        threads[threadIndex].isActive = isActive;
+                        
+                        // Update UI
+                        const threadElement = document.querySelector(`.thread-item[data-id="${threadId}"]`);
+                        const badge = threadElement.querySelector('.badge');
+                        badge.className = `badge badge-${isActive ? 'success' : 'secondary'}`;
+                        badge.textContent = isActive ? 'Active' : 'Inactive';
+                        
+                        // Save changes
+                        saveThreads();
+                    }
+                });
+            });
+            
+            // Add event listeners to delete buttons
+            threadsList.querySelectorAll('.delete-thread').forEach(button => {
+                button.addEventListener('click', function() {
+                    if (!confirm('Are you sure you want to delete this thread?')) {
+                        return;
+                    }
+                    
+                    document.getElementById('loading-overlay').style.display = 'flex';
+                    
+                    try {
+                        const threadItem = this.closest('.thread-item');
+                        const threadId = threadItem.getAttribute('data-id');
+                        
+                        // Find the thread
+                        const threadIndex = threads.findIndex(thread => thread.id === threadId);
+                        if (threadIndex >= 0) {
+                            // Remove from array
+                            threads.splice(threadIndex, 1);
+                            
+                            // Save changes
+                            saveThreads();
+                            
+                            // Remove from UI
+                            threadItem.remove();
+                            
+                            // If no more threads, show empty message
+                            if (threads.length === 0) {
+                                displayThreads();
+                            }
+                        }
+                    } catch (error) {
+                        console.error('Error deleting thread:', error);
+                        alert('Error deleting thread. Please try again.');
+                    } finally {
+                        document.getElementById('loading-overlay').style.display = 'none';
+                    }
+                });
+            });
+        }
+        
+        // Handle thread form submission
+        document.addEventListener('DOMContentLoaded', () => {
+            // ... existing code ...
+            
+            // Initialize threads
+            loadThreads();
+            
+            // Set up refresh button for threads
+            document.getElementById('refresh-threads-btn').addEventListener('click', () => {
+                loadThreads();
+            });
+            
+            // Set up thread type radio buttons
+            const threadTypeRadios = document.querySelectorAll('input[name="thread-type"]');
+            threadTypeRadios.forEach(radio => {
+                radio.addEventListener('change', function() {
+                    // Hide all type-specific containers
+                    document.getElementById('thread-image-container').style.display = 'none';
+                    document.getElementById('thread-facebook-container').style.display = 'none';
+                    
+                    // Show container based on selected type
+                    if (this.value === 'image') {
+                        document.getElementById('thread-image-container').style.display = 'block';
+                    } else if (this.value === 'facebook') {
+                        document.getElementById('thread-facebook-container').style.display = 'block';
+                    }
+                });
+            });
+            
+            // Set up thread file input preview
+            const threadFileInput = document.getElementById('thread-file');
+            const threadPreviewContainer = document.getElementById('thread-preview-container');
+            
+            if (threadFileInput && threadPreviewContainer) {
+                threadFileInput.addEventListener('change', function() {
+                    if (this.files && this.files[0]) {
+                        const file = this.files[0];
+                        const reader = new FileReader();
+                        
+                        reader.onload = function(e) {
+                            threadPreviewContainer.innerHTML = '';
+                            
+                            if (file.type.startsWith('image/')) {
+                                const img = document.createElement('img');
+                                img.src = e.target.result;
+                                threadPreviewContainer.appendChild(img);
+                            }
+                        };
+                        
+                        reader.readAsDataURL(file);
+                    }
+                });
+            }
+            
+            // Handle thread form submission
+            const addThreadForm = document.getElementById('add-thread-form');
+            if (addThreadForm) {
+                addThreadForm.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    
+                    // Show loading overlay
+                    document.getElementById('loading-overlay').style.display = 'flex';
+                    
+                    try {
+                        // Get form values
+                        const title = document.getElementById('thread-title').value;
+                        const content = document.getElementById('thread-content').value;
+                        const threadType = document.querySelector('input[name="thread-type"]:checked').value;
+                        const isActive = document.getElementById('thread-active').checked;
+                        
+                        // Create thread object with base properties
+                        const timestamp = new Date().getTime();
+                        const thread = {
+                            id: timestamp.toString(),
+                            title: title,
+                            content: content,
+                            type: threadType,
+                            isActive: isActive,
+                            isThread: true,
+                            dateAdded: new Date().toISOString()
+                        };
+                        
+                        // Handle different thread types
+                        if (threadType === 'image') {
+                            const file = document.getElementById('thread-file').files[0];
+                            
+                            if (!file) {
+                                alert('Please select an image for the thread');
+                                document.getElementById('loading-overlay').style.display = 'none';
+                                return;
+                            }
+                            
+                            // Check file size (max 5MB)
+                            if (file.size > 5 * 1024 * 1024) {
+                                alert('File size exceeds 5MB limit');
+                                document.getElementById('loading-overlay').style.display = 'none';
+                                return;
+                            }
+                            
+                            // Convert file to data URL for storage
+                            const reader = new FileReader();
+                            reader.onload = function(e) {
+                                thread.imageUrl = e.target.result;
+                                
+                                // Add to threads array
+                                threads.push(thread);
+                                
+                                // Save to localStorage
+                                saveThreads();
+                                
+                                // Reset form
+                                resetThreadForm();
+                                
+                                // Refresh the list
+                                displayThreads();
+                                
+                                // Hide loading overlay
+                                document.getElementById('loading-overlay').style.display = 'none';
+                                
+                                alert('Thread added successfully!');
+                            };
+                            
+                            reader.readAsDataURL(file);
+                            
+                        } else if (threadType === 'facebook') {
+                            // Get Facebook embed code
+                            const facebookEmbed = document.getElementById('thread-facebook').value;
+                            
+                            if (!facebookEmbed) {
+                                alert('Please enter Facebook embed code for the thread');
+                                document.getElementById('loading-overlay').style.display = 'none';
+                                return;
+                            }
+                            
+                            thread.facebookEmbed = facebookEmbed;
+                            
+                            // Add to threads array
+                            threads.push(thread);
+                            
+                            // Save to localStorage
+                            saveThreads();
+                            
+                            // Reset form
+                            resetThreadForm();
+                            
+                            // Refresh the list
+                            displayThreads();
+                            
+                            // Hide loading overlay
+                            document.getElementById('loading-overlay').style.display = 'none';
+                            
+                            alert('Thread added successfully!');
+                            
+                        } else {
+                            // Text-only thread
+                            
+                            // Add to threads array
+                            threads.push(thread);
+                            
+                            // Save to localStorage
+                            saveThreads();
+                            
+                            // Reset form
+                            resetThreadForm();
+                            
+                            // Refresh the list
+                            displayThreads();
+                            
+                            // Hide loading overlay
+                            document.getElementById('loading-overlay').style.display = 'none';
+                            
+                            alert('Thread added successfully!');
+                        }
+                        
+                    } catch (error) {
+                        console.error('Error adding thread:', error);
+                        alert('Error adding thread. Please try again.');
+                        document.getElementById('loading-overlay').style.display = 'none';
+                    }
+                });
+            }
+            
+            // Function to reset thread form
+            function resetThreadForm() {
+                document.getElementById('thread-title').value = '';
+                document.getElementById('thread-content').value = '';
+                document.getElementById('thread-type-text').checked = true;
+                document.getElementById('thread-image-container').style.display = 'none';
+                document.getElementById('thread-facebook-container').style.display = 'none';
+                
+                if (document.getElementById('thread-file')) {
+                    document.getElementById('thread-file').value = '';
+                }
+                
+                if (document.getElementById('thread-facebook')) {
+                    document.getElementById('thread-facebook').value = '';
+                }
+                
+                if (document.getElementById('thread-preview-container')) {
+                    document.getElementById('thread-preview-container').innerHTML = `
+                        <div class="text-center text-muted">
+                            <i class="fas fa-cloud-upload-alt fa-3x mb-2"></i>
+                            <p>Preview will appear here</p>
+                        </div>
+                    `;
+                }
+                
+                document.getElementById('thread-active').checked = true;
+            }
+        });
+        
+        // Ticker Messages Management
+        let tickerMessages = [];
+        
+        function initTickerMessages() {
+            // Load ticker messages from API
+            loadTickerMessages();
+            
+            // Set up event listeners
+            document.getElementById('add-ticker-message').addEventListener('click', addNewTickerMessage);
+            document.getElementById('save-ticker-messages').addEventListener('click', saveTickerMessages);
+        }
+        
+        function loadTickerMessages() {
+            // Show loading indicator
+            const container = document.getElementById('ticker-messages-container');
+            container.innerHTML = '<div class="text-center p-3"><i class="fas fa-spinner fa-spin"></i> Loading ticker messages...</div>';
+            
+            // Fetch ticker messages from API
+            fetch('https://jimboyaczon.pythonanywhere.com/api/ticker_messages')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Server responded with ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data && data.messages && Array.isArray(data.messages) && data.messages.length > 0) {
+                        console.log('Received ticker messages from API:', data.messages);
+                        tickerMessages = data.messages;
+                    } else {
+                        console.log('No valid ticker messages received from API, using defaults');
+                        useDefaultTickerMessages();
+                    }
+                    
+                    // Display the ticker messages
+                    displayTickerMessages();
+                })
+                .catch(error => {
+                    console.error('Error fetching ticker messages from API:', error);
+                    // If error, use default messages
+                    useDefaultTickerMessages();
+                    displayTickerMessages();
+                });
+        }
+
+        function useDefaultTickerMessages() {
+            // Default ticker messages
+            tickerMessages = [
+                "Welcome to AISAT College Registral Services",
+                "Enrollment for the second semester is now open",
+                "Please prepare your requirements before queuing",
+                "For inquiries, please contact 123-4567",
+                "Have a great day!"
+            ];
+        }
+        
+        function displayTickerMessages() {
+            const container = document.getElementById('ticker-messages-container');
+            
+            // Generate HTML for ticker messages
+            let html = '<div class="list-group">';
+            
+            tickerMessages.forEach((message, index) => {
+                html += `
+                    <div class="list-group-item">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="flex-grow-1 mr-2">
+                                <input type="text" class="form-control ticker-message" 
+                                    data-index="${index}" value="${message}" placeholder="Enter ticker message">
+                            </div>
+                            <div>
+                                <button class="btn btn-sm btn-danger delete-ticker-message" data-index="${index}">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            
+            // Update the container
+            container.innerHTML = html;
+            
+            // Add event listeners to delete buttons
+            document.querySelectorAll('.delete-ticker-message').forEach(button => {
+                button.addEventListener('click', function() {
+                    const index = parseInt(this.getAttribute('data-index'));
+                    deleteTickerMessage(index);
+                });
+            });
+            
+            // Add event listeners to input fields
+            document.querySelectorAll('.ticker-message').forEach(input => {
+                input.addEventListener('change', function() {
+                    const index = parseInt(this.getAttribute('data-index'));
+                    tickerMessages[index] = this.value;
+                });
+            });
+        }
+        
+        function addNewTickerMessage() {
+            // Add a new empty message to the array
+            tickerMessages.push("");
+            
+            // Refresh the display
+            displayTickerMessages();
+            
+            // Focus the new input field
+            const inputs = document.querySelectorAll('.ticker-message');
+            const newInput = inputs[inputs.length - 1];
+            if (newInput) {
+                newInput.focus();
+            }
+        }
+        
+        function deleteTickerMessage(index) {
+            // Confirm deletion
+            if (!confirm('Are you sure you want to delete this message?')) {
+                return;
+            }
+            
+            // Remove the message from the array
+            tickerMessages.splice(index, 1);
+            
+            // Refresh the display
+            displayTickerMessages();
+        }
+        
+        function saveTickerMessages() {
+            console.log('Saving ticker messages to server...');
+            
+            // Update messages from input fields (in case they changed)
+            document.querySelectorAll('.ticker-message').forEach(input => {
+                const index = parseInt(input.getAttribute('data-index'));
+                tickerMessages[index] = input.value;
+            });
+            
+            console.log('Collected ticker messages from inputs:', tickerMessages);
+            
+            // Filter out empty messages
+            tickerMessages = tickerMessages.filter(message => message.trim() !== '');
+            console.log('Filtered ticker messages (removed empty):', tickerMessages);
+            
+            // Show loading indicator
+            const saveButton = document.getElementById('save-ticker-messages');
+            const originalText = saveButton.innerHTML;
+            saveButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+            saveButton.disabled = true;
+            
+            // Get token from localStorage
+            const token = localStorage.getItem('userToken');
+            
+            // Save to API
+            fetch('https://jimboyaczon.pythonanywhere.com/api/ticker_messages', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ messages: tickerMessages })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Server responded with ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Ticker messages saved to API successfully:', data);
+                
+                // Show success message
+                alert('Ticker messages saved successfully!');
+                
+                // Refresh the display
+                displayTickerMessages();
+            })
+            .catch(error => {
+                console.error('Error saving ticker messages to API:', error);
+                alert('Error saving ticker messages. Please try again.');
+            })
+            .finally(() => {
+                // Reset button state
+                saveButton.innerHTML = originalText;
+                saveButton.disabled = false;
+            });
+        }
+    </script>
+</body>
+</html>

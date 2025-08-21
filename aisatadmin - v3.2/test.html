@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<body>
+    <h2>Offline Text to Speech (JS)</h2>
+    <input type="text" id="text" value="Hello, I am offline!" size="40">
+    <button onclick="speak()">Speak</button>
+
+    <script>
+        function speak() {
+            const text = document.getElementById("text").value;
+            const utterance = new SpeechSynthesisUtterance(text);
+            speechSynthesis.speak(utterance);
+        }
+    </script>
+</body>
+</html>

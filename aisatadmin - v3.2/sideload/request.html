@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Request</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            /* Only 3 colors as requested */
+            --primary: #3498db;
+            --secondary: #2c3e50; 
+            --white: #ffffff;
+
+            /* Derived colors (shades and transparency of the 3 base colors) */
+            --light-bg: #f5f8fb;
+            --sidebar-active: rgba(52, 152, 219, 0.1);
+            --border-color: rgba(44, 62, 80, 0.1);
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --text-muted: rgba(44, 62, 80, 0.6);
+            --input-bg: var(--white);
+            --input-border: rgba(44, 62, 80, 0.2);
+            --table-even-row: #f8f9fa;
+            --table-hover: #e9ecef;
+            --table-selected: #e7f5ff;
+            --shadow-color: rgba(0, 0, 0, 0.05);
+        }
+        
+        [data-theme="dark"] {
+            --light-bg: #16213e;
+            --sidebar-active: rgba(76, 201, 240, 0.1);
+            --border-color: #2a2a4a;
+            --text-muted: #a0aec0;
+            --secondary: #e6e6e6;
+            --input-bg: #1a1a2e;
+            --input-border: #2a2a4a;
+            --primary: #4cc9f0;
+            --white: #1a1a2e;
+            --table-even-row: #252525;
+            --table-hover: #2a2a4a;
+            --table-selected: #364954;
+            --shadow-color: rgba(0, 0, 0, 0.2);
+            --success-color: #a9dc76;
+            --danger-color: #fc5d7c;
+            --warning-color: #ffcc66;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--light-bg);
+            color: var(--secondary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+            transition: background-color 0.3s, color 0.3s;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .container {
+            flex: 1;
+            width: 100%;
+            padding: 0;
+            max-width: 100%;
+            background-color: transparent;
+        }
+        
+        .card {
+            background-color: var(--white);
+            border-radius: 8px;
+            box-shadow: 0 2px 10px var(--shadow-color);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        h1 {
+            color: var(--secondary);
+            margin-bottom: 2rem;
+            font-weight: 600;
+            font-size: 2rem;
+            padding: 0 2rem;
+        }
+        
+        h2 {
+            font-size: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.75rem;
+            margin-bottom: 1.5rem;
+            color: var(--secondary);
+        }
+        
+        .form-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-group {
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--text-muted);
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--input-border);
+            border-radius: 4px;
+            font-size: 1rem;
+            box-sizing: border-box;
+            transition: border-color 0.2s;
+            background-color: var(--input-bg);
+            color: var(--secondary);
+        }
+        
+        input:focus, select:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(77, 171, 247, 0.25);
+        }
+        
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        button:hover {
+            background-color: var(--accent-hover);
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+        
+        .message {
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            border-radius: 4px;
+            border-left: 4px solid;
+            display: flex;
+            align-items: center;
+        }
+        
+        .message i {
+            margin-right: 10px;
+            font-size: 16px;
+        }
+        
+        .success {
+            background-color: rgba(46, 204, 113, 0.1);
+            border-color: var(--success-color);
+            color: var(--success-color);
+        }
+        
+        .error {
+            background-color: rgba(231, 76, 60, 0.1);
+            border-color: var(--danger-color);
+            color: var(--danger-color);
+        }
+        
+        .info {
+            background-color: rgba(52, 152, 219, 0.1);
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+
+        /* Receipt Modal Styles */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .modal.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: var(--white);
+            padding: 30px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+            transform: translateY(20px);
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            position: relative;
+            color: var(--secondary);
+        }
+
+        .modal.visible .modal-content {
+            transform: translateY(0);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 30px;
+            height: 30px;
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+        
+        .modal-close:hover {
+            background: rgba(0, 0, 0, 0.2);
+        }
+        
+        .modal-close i {
+            color: var(--secondary);
+            font-size: 14px;
+        }
+
+        .modal h3 {
+            color: var(--primary);
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+
+        .receipt-detail {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .receipt-detail span:first-child {
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .receipt-detail span:last-child {
+            font-weight: 500;
+            color: var(--secondary);
+        }
+        
+        .receipt-detail span.request-id-value {
+            font-family: monospace;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        /* User info display */
+        .user-info {
+            background-color: var(--white);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 1rem;
+            margin-top: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .user-info h3 {
+            margin-bottom: 0.5rem;
+            font-size: 1.2rem;
+            color: var(--secondary);
+        }
+
+        .user-info p {
+            margin-bottom: 0.5rem;
+            color: var(--text-muted);
+        }
+
+        .user-info strong {
+            color: var(--secondary);
+        }
+        
+        .btn-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        /* Removed browser printing styles */
+    </style>
+    <script src="theme.js"></script>
+    <script>
+        // Printer API endpoint - change this if your server runs on a different port
+        const PRINTER_API = 'http://localhost:5000/api/printer';
+        let printerAvailable = false;
+        
+        // Check printer status on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add a test printer button
+            addTestPrinterButton();
+            
+            // Check printer status
+            checkPrinterStatus();
+        });
+        
+        // Function to check printer status
+        function checkPrinterStatus() {
+            fetch(`${PRINTER_API}/status`)
+                .then(response => response.json())
+                .then(data => {
+                    printerAvailable = data.available;
+                    console.log(`Printer ${printerAvailable ? 'is' : 'is not'} available`);
+                    
+                    if (printerAvailable) {
+                        showMessage('<i class="fas fa-check-circle"></i> Printer connected and ready', 'success');
+                    } else {
+                        showMessage('<i class="fas fa-exclamation-triangle"></i> Printer not available', 'warning');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error checking printer status:', error);
+                    printerAvailable = false;
+                    showMessage('<i class="fas fa-times-circle"></i> Cannot connect to printer server', 'error');
+                });
+        }
+        
+        // Function to add test printer button
+        function addTestPrinterButton() {
+            const btnContainer = document.querySelector('.form-row');
+            if (btnContainer && !document.getElementById('test-printer-btn')) {
+                const testBtn = document.createElement('button');
+                testBtn.id = 'test-printer-btn';
+                testBtn.innerHTML = '<i class="fas fa-print"></i> Test Printer';
+                testBtn.style.marginTop = '10px';
+                testBtn.style.backgroundColor = '#f39c12';
+                
+                testBtn.onclick = function() {
+                    testPrinter();
+                };
+                
+                btnContainer.appendChild(testBtn);
+            }
+        }
+        
+        // Function to test the printer
+        function testPrinter() {
+            showMessage('<i class="fas fa-spinner fa-spin"></i> Testing printer...', 'info');
+            
+            fetch(`${PRINTER_API}/test`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showMessage('<i class="fas fa-check-circle"></i> ' + data.message, 'success');
+                    } else {
+                        showMessage('<i class="fas fa-exclamation-triangle"></i> ' + data.message, 'warning');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error testing printer:', error);
+                    showMessage('<i class="fas fa-times-circle"></i> Cannot connect to printer server', 'error');
+                });
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <h1><i class="fas fa-ticket-alt"></i> Create Request Ticket</h1>
+            <div id="message" class="hidden message"></div>
+            
+            <div class="card">
+                <h2><i class="fas fa-id-card"></i> Enter Student ID</h2>
+                <form id="idSearchForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="idno">Student ID Number *</label>
+                            <input type="text" id="idno" name="idno" required placeholder="Enter student ID number">
+                        </div>
+                        <div class="form-group" style="flex: 0 0 auto; align-self: flex-end;">
+                            <button type="submit"><i class="fas fa-search"></i> Search</button>
+                        </div>
+                    </div>
+                </form>
+                
+                <div id="userInfo" class="user-info hidden">
+                    <h3><i class="fas fa-user"></i> Student Information</h3>
+                    <p>Name: <strong id="userName">-</strong></p>
+                    <p>Email: <strong id="userEmail">-</strong></p>
+                    <p>Level: <strong id="userLevel">-</strong></p>
+                    <p>Course/Strand: <strong id="userCourse">-</strong></p>
+                </div>
+            </div>
+            
+            <div id="requestForm" class="card hidden">
+                <h2><i class="fas fa-plus-circle"></i> Create Request</h2>
+                <form id="createRequestForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="paymentType">Payment Type:</label>
+                            <select id="paymentType" required>
+                                <option value="">Select Payment Type</option>
+                                <option value="regular">Regular</option>
+                                <option value="express">Express</option>
+                                <option value="priority">Priority</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="paymentMethod">Payment Method:</label>
+                            <select id="paymentMethod" required>
+                                <option value="">Select Payment Method</option>
+                                <option value="full">Full Payment</option>
+                                <option value="installment">Installment</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="requestDate">Date *</label>
+                            <input type="date" id="requestDate" name="requestDate" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="requestTime">Time *</label>
+                            <input type="time" id="requestTime" name="requestTime" required>
+                        </div>
+                    </div>
+                    
+                    <button type="submit"><i class="fas fa-paper-plane"></i> Create Request</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Receipt Modal -->
+    <div id="receipt-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-close" id="close-receipt-btn">
+                <i class="fas fa-times"></i>
+            </div>
+            <h3><i class="fas fa-receipt"></i> Request Receipt</h3>
+            <div class="receipt-detail">
+                <span>Request ID:</span>
+                <span id="receipt-request-id" class="request-id-value">-</span>
+            </div>
+            <div class="receipt-detail">
+                <span>Student ID:</span>
+                <span id="receipt-student-id">-</span>
+            </div>
+            <div class="receipt-detail">
+                <span>Student Name:</span>
+                <span id="receipt-student-name">-</span>
+            </div>
+            <div class="receipt-detail">
+                <span>Date:</span>
+                <span id="receipt-date">-</span>
+            </div>
+            <div class="receipt-detail">
+                <span>Time:</span>
+                <span id="receipt-time">-</span>
+            </div>
+            <div class="receipt-detail">
+                <span>Level:</span>
+                <span id="receipt-level">-</span>
+            </div>
+            <div class="receipt-detail">
+                <span>Payment Type:</span>
+                <span id="receipt-type">-</span>
+            </div>
+            <div class="receipt-detail" style="margin-bottom: 15px;">
+                <span>Payment Method:</span>
+                <span id="receipt-payment">-</span>
+            </div>
+            <div class="btn-container" style="margin-top:15px;">
+                <button id="confirm-request-btn">
+                    <i class="fas fa-check"></i> Confirm
+                </button>
+                <button id="print-receipt-btn" class="print-btn">
+                    <i class="fas fa-print"></i> Print
+                </button>
+            </div>
+            <div id="receipt-message" class="message hidden"></div>
+        </div>
+    </div>
+    
+    <!-- Removed printable receipt HTML -->
+
+    <script>
+        // Define baseUrl for API calls globally
+        const baseUrl = "https://jimboyaczon.pythonanywhere.com";
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            // Apply saved theme
+            applyTheme();
+            
+            const idSearchForm = document.getElementById('idSearchForm');
+            const createRequestForm = document.getElementById('createRequestForm');
+            const messageBox = document.getElementById('message');
+            const userInfo = document.getElementById('userInfo');
+            const requestForm = document.getElementById('requestForm');
+            
+            // Set today's date as the default date
+            const today = new Date();
+            const formattedDate = today.toISOString().split('T')[0];
+            document.getElementById('requestDate').value = formattedDate;
+            
+            // Set current time as the default time
+            const hours = String(today.getHours()).padStart(2, '0');
+            const minutes = String(today.getMinutes()).padStart(2, '0');
+            document.getElementById('requestTime').value = `${hours}:${minutes}`;
+            
+            // Search for student by ID
+            idSearchForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const idno = document.getElementById('idno').value;
+                if (!idno) {
+                    showMessage('<i class="fas fa-exclamation-triangle"></i> Please enter a student ID number', 'error');
+                    return;
+                }
+                
+                // Show loading message
+                showMessage('<i class="fas fa-spinner fa-spin"></i> Searching for student...', 'info');
+                
+                // Get token from localStorage (set by the WebEngineView in main.py)
+                const token = localStorage.getItem('userToken');
+                if (!token) {
+                    showMessage('<i class="fas fa-exclamation-circle"></i> Authentication required. Please log in again.', 'error');
+                    return;
+                }
+                
+                // Call API to search for user
+                fetch(`${baseUrl}/api/user_by_id?idno=${idno}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        if (response.status === 404) {
+                            throw new Error('Student not found. Please check the ID number.');
+                        }
+                        return response.json().then(data => {
+                            throw new Error(data.error || 'Failed to find student');
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Store user data
+                    window.currentUser = data;
+                    
+                    // Display user info
+                    document.getElementById('userName').textContent = data.name || '-';
+                    document.getElementById('userEmail').textContent = data.email || '-';
+                    document.getElementById('userLevel').textContent = data.level || '-';
+                    
+                    // Display course or strand based on level
+                    let courseStrand = '-';
+                    if (data.level === 'College') {
+                        courseStrand = data.course || '-';
+                    } else if (data.level === 'SHS') {
+                        courseStrand = data.strand || '-';
+                    }
+                    document.getElementById('userCourse').textContent = courseStrand;
+                    
+                    // Show user info and request form
+                    userInfo.classList.remove('hidden');
+                    requestForm.classList.remove('hidden');
+                    
+                    // Clear message
+                    messageBox.classList.add('hidden');
+                })
+                .catch(error => {
+                    showMessage('<i class="fas fa-exclamation-circle"></i> ' + error.message, 'error');
+                    userInfo.classList.add('hidden');
+                    requestForm.classList.add('hidden');
+                });
+            });
+            
+            // Create request form submission
+            createRequestForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                if (!window.currentUser) {
+                    showMessage('<i class="fas fa-exclamation-triangle"></i> Please search for a student first', 'error');
+                    return;
+                }
+                
+                const paymentType = document.getElementById('paymentType').value;
+                const paymentMethod = document.getElementById('paymentMethod').value;
+                const requestDate = document.getElementById('requestDate').value;
+                const requestTime = document.getElementById('requestTime').value;
+                
+                if (!paymentType || !paymentMethod || !requestDate || !requestTime) {
+                    showMessage('<i class="fas fa-exclamation-triangle"></i> Please fill in all required fields', 'error');
+                    return;
+                }
+                
+                // Generate a request ID with format X-NNNN
+                // X is the first letter of the payment type
+                const firstLetter = paymentType.charAt(0).toUpperCase();
+                const randomNum = Math.floor(1000 + Math.random() * 9000); // 4-digit number between 1000-9999
+                const requestId = `${firstLetter}-${randomNum}`;
+                
+                // Format time for display
+                const timeObj = new Date(`2000-01-01T${requestTime}`);
+                const hours = timeObj.getHours();
+                const minutes = String(timeObj.getMinutes()).padStart(2, '0');
+                const ampm = hours >= 12 ? 'PM' : 'AM';
+                const hours12 = hours % 12 || 12;
+                const timeDisplay = `${hours12}:${minutes} ${ampm}`;
+                
+                // Format date for display
+                const dateObj = new Date(requestDate);
+                const dateOptions = { year: 'numeric', month: 'long', day: 'numeric' };
+                const dateDisplay = dateObj.toLocaleDateString(undefined, dateOptions);
+                
+                // Store request data
+                window.currentRequest = {
+                    idno: window.currentUser.idno,
+                    name: window.currentUser.name,
+                    level: window.currentUser.level,
+                    date: requestDate,
+                    time: requestTime,
+                    type: paymentType,
+                    payment: paymentType,
+                    method: paymentMethod,
+                    request_id: requestId
+                };
+                
+                // Populate receipt
+                document.getElementById('receipt-request-id').textContent = requestId;
+                document.getElementById('receipt-student-id').textContent = window.currentUser.idno;
+                document.getElementById('receipt-student-name').textContent = window.currentUser.name;
+                document.getElementById('receipt-date').textContent = dateDisplay;
+                document.getElementById('receipt-time').textContent = timeDisplay;
+                document.getElementById('receipt-level').textContent = window.currentUser.level;
+                document.getElementById('receipt-type').textContent = paymentType.charAt(0).toUpperCase() + paymentType.slice(1);
+                document.getElementById('receipt-payment').textContent = paymentMethod === 'full' ? 'Full Payment' : 'Installment';
+                
+                // Clear receipt message
+                const receiptMessage = document.getElementById('receipt-message');
+                receiptMessage.classList.add('hidden');
+                
+                // Show receipt modal
+                document.getElementById('receipt-modal').classList.add('visible');
+            });
+            
+            // Close receipt modal
+            document.getElementById('close-receipt-btn').addEventListener('click', function() {
+                document.getElementById('receipt-modal').classList.remove('visible');
+            });
+            
+            // Confirm request button
+            document.getElementById('confirm-request-btn').addEventListener('click', function() {
+                if (!window.currentRequest) {
+                    return;
+                }
+                
+                // Get token from localStorage
+                const token = localStorage.getItem('userToken');
+                if (!token) {
+                    showReceiptMessage('<i class="fas fa-exclamation-circle"></i> Authentication required. Please log in again.', 'error');
+                    return;
+                }
+                
+                // Show loading message
+                showReceiptMessage('<i class="fas fa-spinner fa-spin"></i> Creating request...', 'info');
+                
+                // Prepare request payload
+                const requestPayload = {
+                    idno: window.currentRequest.idno,
+                    date: window.currentRequest.date,
+                    time: window.currentRequest.time,
+                    level: window.currentRequest.level,
+                    type: window.currentRequest.payment,
+                    payment: window.currentRequest.payment,
+                    method: window.currentRequest.method,
+                    request_id: window.currentRequest.request_id
+                };
+                
+                // Debug log
+                console.log('Sending request payload:', requestPayload);
+                
+                // Call API to create appointment
+                fetch(`${baseUrl}/api/admin/create_appointment`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(requestPayload)
+                })
+                .then(response => {
+                    console.log('Response status:', response.status);
+                    if (!response.ok) {
+                        return response.json().then(data => {
+                            console.error('Error response:', data);
+                            throw new Error(data.error || 'Failed to create request');
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    showReceiptMessage('<i class="fas fa-check-circle"></i> Request created successfully!', 'success');
+                    
+                    // Disable confirm button
+                    document.getElementById('confirm-request-btn').disabled = true;
+                    
+                    // Automatically print receipt after successful confirmation
+                    setTimeout(() => {
+                        printReceipt();
+                    }, 500);
+                    
+                    // Reset forms after a delay
+                    setTimeout(() => {
+                        document.getElementById('receipt-modal').classList.remove('visible');
+                        idSearchForm.reset();
+                        createRequestForm.reset();
+                        userInfo.classList.add('hidden');
+                        requestForm.classList.add('hidden');
+                        
+                        // Reset today's date and current time
+                        document.getElementById('requestDate').value = formattedDate;
+                        document.getElementById('requestTime').value = `${hours}:${minutes}`;
+                        
+                        // Show success message on main page
+                        showMessage('<i class="fas fa-check-circle"></i> Request created successfully!', 'success');
+                        
+                        // Clear stored data
+                        window.currentUser = null;
+                        window.currentRequest = null;
+                        
+                        // Re-enable confirm button
+                        document.getElementById('confirm-request-btn').disabled = false;
+                    }, 1500);
+                })
+                .catch(error => {
+                    showReceiptMessage('<i class="fas fa-exclamation-circle"></i> ' + error.message, 'error');
+                });
+            });
+            
+            // Print receipt button
+            document.getElementById('print-receipt-btn').addEventListener('click', function() {
+                printReceipt();
+            });
+        });
+        
+        // Function to print the receipt
+        function printReceipt() {
+            try {
+                console.log("Starting print receipt function");
+                
+                // Check if printer server is reachable
+                if (!printerAvailable) {
+                    // First check if printer is available
+                    showReceiptMessage('<i class="fas fa-exclamation-circle"></i> Printer not available. Checking status...', 'warning');
+                    
+                    fetch(`${PRINTER_API}/status`)
+                        .then(response => response.json())
+                        .then(data => {
+                            printerAvailable = data.available;
+                            if (printerAvailable) {
+                                showReceiptMessage('<i class="fas fa-check-circle"></i> Printer connected. Trying to print...', 'info');
+                                setTimeout(printReceipt, 500);  // Try again after delay
+                            } else {
+                                showReceiptMessage('<i class="fas fa-times-circle"></i> Printer not available', 'error');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error checking printer status:', error);
+                            showReceiptMessage('<i class="fas fa-times-circle"></i> Cannot connect to printer server', 'error');
+                        });
+                    return;
+                }
+                
+                // Get receipt data
+                const receiptData = {
+                    requestId: document.getElementById('receipt-request-id').textContent,
+                    studentId: document.getElementById('receipt-student-id').textContent,
+                    studentName: document.getElementById('receipt-student-name').textContent,
+                    date: document.getElementById('receipt-date').textContent,
+                    time: document.getElementById('receipt-time').textContent,
+                    level: document.getElementById('receipt-level').textContent,
+                    paymentType: document.getElementById('receipt-type').textContent,
+                    paymentMethod: document.getElementById('receipt-payment').textContent
+                };
+                
+                console.log("Receipt data prepared:", receiptData);
+                showReceiptMessage('<i class="fas fa-spinner fa-spin"></i> Printing receipt...', 'info');
+                
+                // Use the Flask API to print the receipt
+                fetch(`${PRINTER_API}/print`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(receiptData)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log("Print response:", data);
+                    if (data.success) {
+                        showReceiptMessage('<i class="fas fa-check-circle"></i> Receipt printed successfully!', 'success');
+                    } else {
+                        showReceiptMessage('<i class="fas fa-exclamation-triangle"></i> ' + data.message, 'warning');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error printing receipt:', error);
+                    showReceiptMessage('<i class="fas fa-times-circle"></i> Cannot connect to printer server', 'error');
+                });
+            } catch (err) {
+                console.error("Error in printReceipt function:", err);
+                showReceiptMessage('<i class="fas fa-exclamation-circle"></i> Error setting up print: ' + err.message, 'error');
+            }
+        }
+        
+        // Removed browser printing function
+        
+        // Show message in the main page
+        function showMessage(text, type) {
+            const messageBox = document.getElementById('message');
+            messageBox.innerHTML = text;
+            messageBox.className = `message ${type}`;
+            messageBox.classList.remove('hidden');
+            
+            // Auto-hide success messages after 3 seconds
+            if (type === 'success') {
+                setTimeout(() => {
+                    messageBox.classList.add('hidden');
+                }, 3000);
+            }
+        }
+        
+        // Show message in the receipt modal
+        function showReceiptMessage(text, type) {
+            const messageBox = document.getElementById('receipt-message');
+            messageBox.innerHTML = text;
+            messageBox.className = `message ${type}`;
+            messageBox.classList.remove('hidden');
+        }
+        
+        // Apply theme from localStorage
+        function applyTheme() {
+            const savedTheme = localStorage.getItem('adminTheme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        }
+    </script>
+</body>
+</html>

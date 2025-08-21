@@ -1,0 +1,1748 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            /* Only 3 colors as requested */
+            --primary: #3498db;
+            --secondary: #2c3e50; 
+            --white: #ffffff;
+
+            /* Derived colors (shades and transparency of the 3 base colors) */
+            --light-bg: #f5f8fb;
+            --sidebar-active: rgba(52, 152, 219, 0.1);
+            --border-color: rgba(44, 62, 80, 0.1);
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --text-muted: rgba(44, 62, 80, 0.6);
+            --input-bg: var(--white);
+            --input-border: rgba(44, 62, 80, 0.2);
+            --table-even-row: #f8f9fa;
+            --table-hover: #e9ecef;
+            --table-selected: #e7f5ff;
+            --shadow-color: rgba(0, 0, 0, 0.05);
+        }
+        
+        [data-theme="dark"] {
+            --light-bg: #16213e;
+            --sidebar-active: rgba(76, 201, 240, 0.1);
+            --border-color: #2a2a4a;
+            --text-muted: #a0aec0;
+            --secondary: #e6e6e6;
+            --input-bg: #1a1a2e;
+            --input-border: #2a2a4a;
+            --primary: #4cc9f0;
+            --white: #1a1a2e;
+            --table-even-row: #252525;
+            --table-hover: #2a2a4a;
+            --table-selected: #364954;
+            --shadow-color: rgba(0, 0, 0, 0.2);
+            --success-color: #a9dc76;
+            --danger-color: #fc5d7c;
+            --warning-color: #ffcc66;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light-bg);
+            color: var(--secondary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+            transition: background-color 0.3s, color 0.3s;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .container {
+            flex: 1;
+            width: 100%;
+            padding: 0;
+            max-width: 100%;
+            background-color: transparent;
+        }
+        
+        .card {
+            background-color: var(--white);
+            border-radius: 8px;
+            box-shadow: 0 2px 10px var(--shadow-color);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        h1 {
+            color: var(--secondary);
+            margin-bottom: 2rem;
+            font-weight: 600;
+            font-size: 2rem;
+            padding: 0 2rem;
+        }
+        
+        h2 {
+            font-size: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.75rem;
+            margin-bottom: 1.5rem;
+            color: var(--secondary);
+        }
+        
+        .form-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-group {
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--text-muted);
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--input-border);
+            border-radius: 4px;
+            font-size: 1rem;
+            box-sizing: border-box;
+            transition: border-color 0.2s;
+            background-color: var(--input-bg);
+            color: var(--secondary);
+        }
+        
+        input:focus, select:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(77, 171, 247, 0.25);
+        }
+        
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        
+        button:hover {
+            background-color: var(--primary);
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+        
+        .filters {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            align-items: center;
+        }
+        
+        .search-box {
+            flex: 1;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: var(--white);
+            border-radius: 8px;
+            box-shadow: 0 2px 10px var(--shadow-color);
+            overflow: hidden;
+        }
+        
+        th, td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        th {
+            background-color: var(--primary);
+            color: white;
+            font-weight: 500;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+        }
+        
+        th:hover {
+            background-color: var(--primary);
+            opacity: 0.9;
+        }
+        
+        tr:nth-child(even) {
+            background-color: var(--table-even-row);
+        }
+        
+        .edit-btn, .save-btn, .cancel-btn, .change-pwd-btn {
+            padding: 0.5rem 0.75rem;
+            margin-right: 0.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.875rem;
+        }
+        
+        .edit-btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+        }
+        
+        .edit-btn:hover {
+            background-color: var(--primary);
+            opacity: 0.9;
+        }
+        
+        .save-btn {
+            background-color: var(--success-color);
+            color: white;
+            border: none;
+        }
+        
+        .save-btn:hover {
+            background-color: var(--success-color);
+            opacity: 0.9;
+        }
+        
+        .cancel-btn {
+            background-color: var(--danger-color);
+            color: white;
+            border: none;
+        }
+        
+        .cancel-btn:hover {
+            background-color: var(--danger-color);
+            opacity: 0.9;
+        }
+        
+        .change-pwd-btn {
+            background-color: #9b59b6;
+            color: white;
+            border: none;
+            margin-left: 5px;
+        }
+        
+        .change-pwd-btn:hover {
+            background-color: #8e44ad;
+            opacity: 0.9;
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+        
+        .message {
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            border-radius: 4px;
+            border-left: 4px solid;
+            display: flex;
+            align-items: center;
+        }
+        
+        .message i {
+            margin-right: 10px;
+            font-size: 16px;
+        }
+        
+        .success {
+            background-color: rgba(46, 204, 113, 0.1);
+            border-color: var(--success-color);
+            color: var(--success-color);
+        }
+        
+        .error {
+            background-color: rgba(231, 76, 60, 0.1);
+            border-color: var(--danger-color);
+            color: var(--danger-color);
+        }
+        
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            overflow: auto;
+        }
+        
+        .modal-content {
+            background-color: var(--white);
+            margin: 15% auto;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px var(--shadow-color);
+            width: 400px;
+            max-width: 90%;
+            position: relative;
+            color: var(--secondary);
+        }
+        
+        .close-modal {
+            color: var(--text-muted);
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .close-modal:hover {
+            color: var(--secondary);
+        }
+        
+        .success {
+            background-color: var(--success-color);
+            color: #2b8a3e;
+            border-left: 4px solid #2b8a3e;
+        }
+        
+        .error {
+            background-color: var(--danger-color);
+            color: white;
+            border-left: 4px solid #721c24;
+        }
+        
+        .view-row input, .view-row select {
+            background: none;
+            border: none;
+            font-size: inherit;
+            color: inherit;
+            padding: 0;
+            width: 100%;
+            pointer-events: none;
+        }
+        
+        .edit-row input, .edit-row select {
+            border: 1px solid var(--accent-color);
+            padding: 0.5rem;
+            width: 100%;
+        }
+        
+        /* Bulk Upload Styles */
+        .csv-info {
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background-color: var(--bg-primary);
+            border-radius: 4px;
+        }
+        
+        .csv-info code {
+            display: block;
+            padding: 0.5rem;
+            margin: 0.5rem 0;
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-family: monospace;
+        }
+        
+        .csv-guidelines {
+            padding-left: 1.5rem;
+            margin-top: 0.5rem;
+        }
+        
+        .csv-guidelines li {
+            margin-bottom: 0.25rem;
+        }
+        
+        .csv-preview-table {
+            margin: 1rem 0;
+            overflow-x: auto;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .csv-preview-table table {
+            width: 100%;
+            margin-bottom: 0;
+        }
+        
+        .csv-preview-table th {
+            position: sticky;
+            top: 0;
+            z-index: 1;
+        }
+        
+        .progress-bar {
+            height: 20px;
+            background-color: var(--bg-primary);
+            border-radius: 10px;
+            margin: 1rem 0;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background-color: var(--accent-color);
+            width: 0%;
+            transition: width 0.3s ease-in-out;
+        }
+        
+        .result-item {
+            padding: 0.5rem 1rem;
+            margin: 0.5rem 0;
+            border-radius: 4px;
+        }
+        
+        .result-item.success {
+            background-color: rgba(169, 220, 118, 0.2);
+            border: 1px solid var(--success-color);
+        }
+        
+        .result-item.error {
+            background-color: rgba(252, 93, 124, 0.2);
+            border: 1px solid var(--danger-color);
+            color: var(--danger-color);
+        }
+        
+        #errorList li {
+            margin-bottom: 0.5rem;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script src="theme.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <h1><i class="fas fa-users"></i> User Management</h1>
+            <div id="message" class="hidden message"></div>
+            
+            <div class="card">
+                <h2><i class="fas fa-user-plus"></i> Quick Add User</h2>
+                <form id="addUserForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="idno">ID Number *</label>
+                            <input type="text" id="idno" name="idno" required placeholder="Enter user ID number">
+                        </div>
+                        <div class="form-group">
+                            <label for="password">Password *</label>
+                            <input type="password" id="password" name="password" required placeholder="Enter password">
+                        </div>
+                        <div class="form-group">
+                            <label for="level">Level *</label>
+                            <select id="level" name="level" required>
+                                <option value="" disabled selected>Select level</option>
+                                <option value="College">College</option>
+                                <option value="SHS">Senior High School</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group hidden" id="courseGroup">
+                            <label for="course">Course *</label>
+                            <select id="course" name="course">
+                                <option value="" disabled selected>Select course</option>
+                                <option value="BS Computer Science">BS Computer Science</option>
+                                <option value="BS Criminology">BS Criminology</option>
+                                <option value="BS Tourism Management">BS Tourism Management</option>
+                                <option value="BS Accounting Information System">BS Accounting Information System</option>
+                                <option value="BS Office Administration">BS Office Administration</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group hidden" id="strandGroup">
+                            <label for="strand">Strand *</label>
+                            <select id="strand" name="strand">
+                                <option value="" disabled selected>Select strand</option>
+                                <option value="STEM">STEM</option>
+                                <option value="ABM">ABM</option>
+                                <option value="HUMSS">HUMSS</option>
+                                <option value="GAS">GAS</option>
+                                <option value="ICT-CP">ICT-CP</option>
+                                <option value="ICT-CSS">ICT-CSS</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <button type="submit"><i class="fas fa-plus-circle"></i> Add User</button>
+                </form>
+            </div>
+            
+            <div class="card">
+                <h2><i class="fas fa-file-upload"></i> Bulk Upload Users</h2>
+                <div class="csv-info">
+                    <p>Upload a CSV file with the following columns:</p>
+                    <code>idnumber,password,level,course/strand</code>
+                    <ul class="csv-guidelines">
+                        <li>For <strong>level</strong>, use "College" or "SHS" (Senior High School)</li>
+                        <li>For <strong>course</strong> (College), use one of: "BS Computer Science", "BS Criminology", etc.</li>
+                        <li>For <strong>strand</strong> (SHS), use one of: "STEM", "ABM", "HUMSS", "GAS", "ICT-CP", "ICT-CSS"</li>
+                        <li>Leave course/strand cell empty if not applicable</li>
+                    </ul>
+                    <button id="downloadSampleBtn" type="button" style="background-color: #28a745; margin-top: 10px;">
+                        <i class="fas fa-download"></i> Download Sample CSV
+                    </button>
+                </div>
+                
+                <div class="csv-upload-container">
+                    <div class="form-group">
+                        <label for="csvFile">Select CSV File</label>
+                        <input type="file" id="csvFile" name="csvFile" accept=".csv">
+                    </div>
+                    
+                    <div class="form-group" style="margin-top: 1rem;">
+                        <button id="uploadCsvBtn" type="button"><i class="fas fa-upload"></i> Upload and Process</button>
+                    </div>
+                </div>
+                
+                <div id="csvPreview" class="hidden">
+                    <h3>CSV Preview</h3>
+                    <div id="csvPreviewContent" class="csv-preview-table"></div>
+                    
+                    <div class="form-group" style="margin-top: 1rem; display: flex; gap: 1rem;">
+                        <button id="confirmUploadBtn" type="button" style="background-color: var(--success-color);"><i class="fas fa-check"></i> Confirm Upload</button>
+                        <button id="cancelUploadBtn" type="button" style="background-color: var(--danger-color);"><i class="fas fa-times"></i> Cancel</button>
+                    </div>
+                </div>
+                
+                <div id="uploadProgress" class="hidden">
+                    <div class="progress-bar">
+                        <div id="progressFill" class="progress-fill"></div>
+                    </div>
+                    <div id="progressStatus">Processing: <span id="processedCount">0</span> / <span id="totalCount">0</span></div>
+                </div>
+                
+                <div id="uploadResults" class="hidden">
+                    <h3>Upload Results</h3>
+                    <div id="successCount" class="result-item success">Successful: 0</div>
+                    <div id="errorCount" class="result-item error">Failed: 0</div>
+                    <div id="errorDetails" class="hidden">
+                        <h4>Error Details:</h4>
+                        <ul id="errorList"></ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2><i class="fas fa-list"></i> User List</h2>
+                
+                <div class="filters">
+                    <div class="search-box form-group">
+                        <input type="text" id="searchInput" placeholder="Search users...">
+                    </div>
+                    <div class="form-group" style="max-width: 200px;">
+                        <select id="levelFilter">
+                            <option value="all">All Levels</option>
+                            <option value="College">College</option>
+                            <option value="SHS">Senior High School</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="max-width: 200px;">
+                        <select id="courseFilter">
+                            <option value="">All Courses/Strands</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <table id="usersTable">
+                    <thead>
+                        <tr>
+                            <th data-sort="idno"><i class="fas fa-hashtag"></i> ID Number</th>
+                            <th data-sort="name"><i class="fas fa-user"></i> Name</th>
+                            <th data-sort="email"><i class="fas fa-envelope"></i> Email</th>
+                            <th data-sort="level"><i class="fas fa-level-up-alt"></i> Level</th>
+                            <th data-sort="course"><i class="fas fa-book"></i> Course/Strand</th>
+                            <th><i class="fas fa-cogs"></i> Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTableBody">
+                        <!-- User data will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Password Change Modal -->
+    <div id="passwordModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2><i class="fas fa-key"></i> Change Password</h2>
+            <div id="passwordModalMessage" class="hidden message"></div>
+            <form id="changePasswordForm">
+                <input type="hidden" id="passwordUserId" name="userId">
+                <input type="hidden" id="passwordUserIdno" name="userIdno">
+                
+                <div class="form-group">
+                    <label for="newPassword">New Password</label>
+                    <input type="password" id="newPassword" name="newPassword" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="confirmPassword">Confirm Password</label>
+                    <input type="password" id="confirmPassword" name="confirmPassword" required>
+                </div>
+                
+                <div style="margin-top: 20px; text-align: right;">
+                    <button type="button" id="cancelPasswordBtn"><i class="fas fa-times"></i> Cancel</button>
+                    <button type="submit" style="margin-left: 10px; background-color: var(--success-color);"><i class="fas fa-save"></i> Save Password</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Apply saved theme
+            applyTheme();
+            
+            // DEBUG: Check if token exists
+            const token = localStorage.getItem('userToken');
+            console.log('Token in localStorage:', token ? 'exists' : 'does not exist');
+            
+            const addUserForm = document.getElementById('addUserForm');
+            const level = document.getElementById('level');
+            const courseGroup = document.getElementById('courseGroup');
+            const strandGroup = document.getElementById('strandGroup');
+            const course = document.getElementById('course');
+            const strand = document.getElementById('strand');
+            const messageBox = document.getElementById('message');
+            const searchInput = document.getElementById('searchInput');
+            const levelFilter = document.getElementById('levelFilter');
+            const courseFilter = document.getElementById('courseFilter');
+            const usersTableBody = document.getElementById('usersTableBody');
+            
+            // Helper function to display messages consistently
+            function displayMessage(text, type) {
+                messageBox.innerHTML = '<i class="fas fa-' + (type === 'success' ? 'check-circle' : 'exclamation-circle') + '"></i> ' + text;
+                messageBox.className = `message ${type}`;
+                messageBox.classList.remove('hidden');
+                
+                // Auto-hide success messages after 3 seconds
+                if (type === 'success') {
+                    setTimeout(() => {
+                        messageBox.classList.add('hidden');
+                    }, 3000);
+                }
+            }
+            
+            let users = [];
+            let sortField = 'idno';
+            let sortDirection = 'desc';
+            const baseUrl = "https://jimboyaczon.pythonanywhere.com";
+            
+            // Make baseUrl available globally
+            window.baseUrl = baseUrl;
+            
+            // Explicit fetchUsers function that will be called by the WebEngineView
+            window.fetchUsers = function() {
+                console.log('fetchUsers function called from WebEngineView');
+                fetchUsers();
+            };
+            
+            // Show relevant fields based on selected level
+            level.addEventListener('change', function() {
+                if (this.value === 'College') {
+                    courseGroup.classList.remove('hidden');
+                    strandGroup.classList.add('hidden');
+                    course.setAttribute('required', true);
+                    strand.removeAttribute('required');
+                    strand.value = '';
+                } else if (this.value === 'SHS') {
+                    strandGroup.classList.remove('hidden');
+                    courseGroup.classList.add('hidden');
+                    strand.setAttribute('required', true);
+                    course.removeAttribute('required');
+                    course.value = '';
+                }
+            });
+            
+            // Add user form submission
+            addUserForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const idno = document.getElementById('idno').value;
+                const password = document.getElementById('password').value;
+                const selectedLevel = level.value;
+                let courseValue = '';
+                let strandValue = '';
+                
+                if (selectedLevel === 'College') {
+                    courseValue = course.value;
+                    strandValue = null;
+                } else {
+                    strandValue = strand.value;
+                    courseValue = null;
+                }
+                
+                // Create user data object with minimal fields
+                const userData = {
+                    idno: idno,
+                    name: "New User", // Auto-filled
+                    email: `${idno}@student.aisat.edu.ph`, // Auto-generated email
+                    password: password,
+                    level: selectedLevel,
+                    course: courseValue,
+                    strand: strandValue,
+                    cell: null // Auto-filled with NULL
+                };
+                
+                // Call API to add user
+                const token = localStorage.getItem('userToken');
+                
+                fetch(`${baseUrl}/api/auth/create_public_user`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(userData)
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(data => {
+                            throw new Error(data.error || 'Failed to add user');
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    displayMessage('User added successfully!', 'success');
+                    
+                    addUserForm.reset();
+                    courseGroup.classList.add('hidden');
+                    strandGroup.classList.add('hidden');
+                    fetchUsers();
+                })
+                .catch(error => {
+                    displayMessage(error.message, 'error');
+                });
+            });
+            
+            // Fetch users
+            function fetchUsers() {
+                const token = localStorage.getItem('userToken');
+                if (!token) {
+                    displayMessage('Authentication required. Please log in.', 'error');
+                    return;
+                }
+                
+                console.log('Fetching users with token:', token);
+                
+                fetch(`${baseUrl}/api/users`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                })
+                .then(response => {
+                    console.log('Response status:', response.status);
+                    console.log('Response headers:', [...response.headers].map(h => `${h[0]}: ${h[1]}`).join(', '));
+                    
+                    if (!response.ok) {
+                        if (response.status === 401) {
+                            displayMessage('Authentication failed. Please log in again.', 'error');
+                            localStorage.removeItem('userToken');
+                            return Promise.reject(new Error('Authentication failed'));
+                        }
+                        
+                        // Try to parse as JSON first
+                        return response.text().then(text => {
+                            console.error('Error response text:', text);
+                            try {
+                                // Try to parse as JSON
+                                const data = JSON.parse(text);
+                                throw new Error(data.error || 'Failed to fetch users');
+                            } catch (e) {
+                                // If not valid JSON, return the text
+                                throw new Error(`Server error (${response.status}): ${text.substring(0, 100)}...`);
+                            }
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Users fetched successfully:', data);
+                    users = data;
+                    renderUsers();
+                    updateCourseFilterOptions();
+                })
+                .catch(error => {
+                    console.error('Fetch error:', error);
+                    displayMessage(error.message, 'error');
+                });
+            }
+            
+            // Render users to table
+            function renderUsers() {
+                // Apply filters
+                const searchTerm = searchInput.value.toLowerCase();
+                const levelFilterValue = levelFilter.value;
+                const courseFilterValue = courseFilter ? courseFilter.value : '';
+                
+                // Filter users
+                const filteredUsers = users.filter(user => {
+                    const matchesSearch = 
+                        (user.idno && user.idno.toLowerCase().includes(searchTerm)) ||
+                        (user.name && user.name.toLowerCase().includes(searchTerm)) ||
+                        (user.email && user.email.toLowerCase().includes(searchTerm));
+                    
+                    const matchesLevel = levelFilterValue === 'all' || user.level === levelFilterValue;
+                    
+                    let matchesCourse = true;
+                    if (courseFilterValue) {
+                        if (user.level === 'College') {
+                            matchesCourse = user.course === courseFilterValue;
+                        } else {
+                            matchesCourse = user.strand === courseFilterValue;
+                        }
+                    }
+                    
+                    return matchesSearch && matchesLevel && matchesCourse;
+                });
+                
+                // Sort users
+                filteredUsers.sort((a, b) => {
+                    let valA = a[sortField] || '';
+                    let valB = b[sortField] || '';
+                    
+                    if (typeof valA === 'string') valA = valA.toLowerCase();
+                    if (typeof valB === 'string') valB = valB.toLowerCase();
+                    
+                    if (valA < valB) return sortDirection === 'asc' ? -1 : 1;
+                    if (valA > valB) return sortDirection === 'asc' ? 1 : -1;
+                    return 0;
+                });
+                
+                // Clear the table body
+                usersTableBody.innerHTML = '';
+                
+                // Add users to table
+                filteredUsers.forEach(user => {
+                    const row = document.createElement('tr');
+                    row.className = 'view-row';
+                    row.dataset.id = user.id;
+                    
+                    const courseOrStrand = user.level === 'College' ? user.course : user.strand;
+                    
+                    row.innerHTML = `
+                        <td><input type="text" name="idno" value="${user.idno || ''}" readonly></td>
+                        <td><input type="text" name="name" value="${user.name || ''}" readonly></td>
+                        <td><input type="text" name="email" value="${user.email || ''}" readonly></td>
+                        <td>
+                            <select name="level" disabled>
+                                <option value="College" ${user.level === 'College' ? 'selected' : ''}>College</option>
+                                <option value="SHS" ${user.level === 'SHS' ? 'selected' : ''}>SHS</option>
+                            </select>
+                        </td>
+                        <td><input type="text" name="courseStrand" value="${courseOrStrand || ''}" readonly></td>
+                        <td>
+                            <button class="edit-btn"><i class="fas fa-edit"></i> Edit</button>
+                            <button class="save-btn hidden"><i class="fas fa-save"></i> Save</button>
+                            <button class="cancel-btn hidden"><i class="fas fa-times"></i> Cancel</button>
+                            <button class="change-pwd-btn"><i class="fas fa-key"></i> Change Password</button>
+                        </td>
+                    `;
+                    
+                    // Add event listeners to the buttons
+                    const editBtn = row.querySelector('.edit-btn');
+                    const saveBtn = row.querySelector('.save-btn');
+                    const cancelBtn = row.querySelector('.cancel-btn');
+                    const changePwdBtn = row.querySelector('.change-pwd-btn');
+                    
+                    editBtn.addEventListener('click', () => {
+                        enableRowEdit(row, user);
+                    });
+                    
+                    saveBtn.addEventListener('click', () => {
+                        saveRowEdit(row, user);
+                    });
+                    
+                    cancelBtn.addEventListener('click', () => {
+                        cancelRowEdit(row, user);
+                    });
+                    
+                    changePwdBtn.addEventListener('click', () => {
+                        openPasswordModal(user);
+                    });
+                    
+                    usersTableBody.appendChild(row);
+                });
+            }
+            
+            // Enable row editing
+            function enableRowEdit(row, user) {
+                // Dispatch event to notify that editing has started
+                document.dispatchEvent(new CustomEvent('editStateChange', {
+                    detail: { isEditing: true }
+                }));
+                
+                row.className = 'edit-row';
+                
+                const inputs = row.querySelectorAll('input');
+                inputs.forEach(input => {
+                    if (input.name !== 'idno') { // Keep ID number readonly
+                        input.readOnly = false;
+                        input.style.pointerEvents = 'auto';
+                    }
+                });
+                
+                // Handle level select
+                const levelSelect = row.querySelector('select[name="level"]');
+                levelSelect.disabled = false;
+                
+                // Replace simple courseStrand field with dynamic course/strand selects
+                const courseStrandCell = row.cells[4];
+                const originalValue = courseStrandCell.querySelector('input').value;
+                
+                // Create dropdown based on current level
+                let selectHtml = '';
+                if (user.level === 'College') {
+                    selectHtml = `
+                        <select name="course">
+                            <option value="" ${!originalValue ? 'selected' : ''}>Select Course</option>
+                            <option value="BS Computer Science" ${originalValue === 'BS Computer Science' ? 'selected' : ''}>BS Computer Science</option>
+                            <option value="BS Criminology" ${originalValue === 'BS Criminology' ? 'selected' : ''}>BS Criminology</option>
+                            <option value="BS Tourism Management" ${originalValue === 'BS Tourism Management' ? 'selected' : ''}>BS Tourism Management</option>
+                            <option value="BS Accounting Information System" ${originalValue === 'BS Accounting Information System' ? 'selected' : ''}>BS Accounting Information System</option>
+                            <option value="BS Office Administration" ${originalValue === 'BS Office Administration' ? 'selected' : ''}>BS Office Administration</option>
+                        </select>
+                    `;
+                } else {
+                    selectHtml = `
+                        <select name="strand">
+                            <option value="" ${!originalValue ? 'selected' : ''}>Select Strand</option>
+                            <option value="STEM" ${originalValue === 'STEM' ? 'selected' : ''}>STEM</option>
+                            <option value="ABM" ${originalValue === 'ABM' ? 'selected' : ''}>ABM</option>
+                            <option value="HUMSS" ${originalValue === 'HUMSS' ? 'selected' : ''}>HUMSS</option>
+                            <option value="GAS" ${originalValue === 'GAS' ? 'selected' : ''}>GAS</option>
+                            <option value="ICT-CP" ${originalValue === 'ICT-CP' ? 'selected' : ''}>ICT-CP</option>
+                            <option value="ICT-CSS" ${originalValue === 'ICT-CSS' ? 'selected' : ''}>ICT-CSS</option>
+                        </select>
+                    `;
+                }
+                
+                courseStrandCell.innerHTML = selectHtml;
+                
+                // Dynamic changing of course/strand select when level changes
+                levelSelect.addEventListener('change', function() {
+                    if (this.value === 'College') {
+                        courseStrandCell.innerHTML = `
+                            <select name="course">
+                                <option value="" selected>Select Course</option>
+                                <option value="BS Computer Science">BS Computer Science</option>
+                                <option value="BS Criminology">BS Criminology</option>
+                                <option value="BS Tourism Management">BS Tourism Management</option>
+                                <option value="BS Accounting Information System">BS Accounting Information System</option>
+                                <option value="BS Office Administration">BS Office Administration</option>
+                            </select>
+                        `;
+                    } else {
+                        courseStrandCell.innerHTML = `
+                            <select name="strand">
+                                <option value="" selected>Select Strand</option>
+                                <option value="STEM">STEM</option>
+                                <option value="ABM">ABM</option>
+                                <option value="HUMSS">HUMSS</option>
+                                <option value="GAS">GAS</option>
+                                <option value="ICT-CP">ICT-CP</option>
+                                <option value="ICT-CSS">ICT-CSS</option>
+                            </select>
+                        `;
+                    }
+                });
+                
+                // Show save and cancel buttons
+                row.querySelector('.edit-btn').classList.add('hidden');
+                row.querySelector('.save-btn').classList.remove('hidden');
+                row.querySelector('.cancel-btn').classList.remove('hidden');
+            }
+            
+            // Save row edits
+            function saveRowEdit(row, user) {
+                // Dispatch event to notify that editing has ended
+                document.dispatchEvent(new CustomEvent('editStateChange', {
+                    detail: { isEditing: false }
+                }));
+                
+                const userId = row.dataset.id;
+                const name = row.querySelector('input[name="name"]').value;
+                const email = row.querySelector('input[name="email"]').value;
+                const level = row.querySelector('select[name="level"]').value;
+                
+                let course = null;
+                let strand = null;
+                
+                if (level === 'College') {
+                    course = row.querySelector('select[name="course"]').value;
+                } else {
+                    strand = row.querySelector('select[name="strand"]').value;
+                }
+                
+                const updatedUser = {
+                    id: userId,
+                    name: name,
+                    email: email,
+                    level: level,
+                    course: course,
+                    strand: strand
+                };
+                
+                const token = localStorage.getItem('userToken');
+                
+                fetch(`${baseUrl}/api/update_user`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(updatedUser)
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(data => {
+                            throw new Error(data.error || 'Failed to update user');
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    displayMessage('User updated successfully!', 'success');
+                    
+                    fetchUsers(); // Refresh the user list
+                })
+                .catch(error => {
+                    displayMessage(error.message, 'error');
+                    cancelRowEdit(row, user); // Reset the row on error
+                });
+            }
+            
+            // Cancel row edit
+            function cancelRowEdit(row, user) {
+                // Dispatch event to notify that editing has ended
+                document.dispatchEvent(new CustomEvent('editStateChange', {
+                    detail: { isEditing: false }
+                }));
+                
+                // Revert back to view mode by re-rendering
+                renderUsers();
+            }
+            
+            // This function has been replaced with displayMessage
+            
+            // Update course filter options based on selected level
+            function updateCourseFilterOptions() {
+                const level = levelFilter.value;
+                courseFilter.innerHTML = '<option value="">All Courses/Strands</option>';
+                
+                // Create a set of unique courses/strands
+                const options = new Set();
+                
+                users.forEach(user => {
+                    // If no level filter or level matches
+                    if (!level || user.level === level) {
+                        if (user.level === 'College' && user.course) {
+                            options.add(user.course);
+                        } else if (user.level === 'SHS' && user.strand) {
+                            options.add(user.strand);
+                        }
+                    }
+                });
+                
+                // Add options to select
+                options.forEach(option => {
+                    const optionEl = document.createElement('option');
+                    optionEl.value = option;
+                    optionEl.textContent = option;
+                    courseFilter.appendChild(optionEl);
+                });
+            }
+            
+            // Add event listeners for sorting
+            document.querySelectorAll('th[data-sort]').forEach(th => {
+                th.addEventListener('click', () => {
+                    const field = th.dataset.sort;
+                    
+                    // Update sort direction
+                    if (field === sortField) {
+                        sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+                    } else {
+                        sortField = field;
+                        sortDirection = 'asc';
+                    }
+                    
+                    // Update all headers to remove sort indicators
+                    document.querySelectorAll('th').forEach(header => {
+                        header.textContent = header.textContent.replace(' ▲', '').replace(' ▼', '');
+                    });
+                    
+                    // Add sort indicator to current header
+                    th.textContent += sortDirection === 'asc' ? ' ▲' : ' ▼';
+                    
+                    // Re-render the table
+                    renderUsers();
+                });
+            });
+            
+            // Add event listeners for filtering
+            searchInput.addEventListener('input', renderUsers);
+            levelFilter.addEventListener('change', () => {
+                updateCourseFilterOptions();
+                renderUsers();
+            });
+            courseFilter.addEventListener('change', renderUsers);
+            
+            // Check for authentication and load initial data
+            if (!localStorage.getItem('userToken')) {
+                displayMessage('Authentication required. Please log in.', 'error');
+                
+                // DEBUG: Add a test button to set a token for testing
+                const debugDiv = document.createElement('div');
+                debugDiv.style.margin = '1rem 0';
+                debugDiv.innerHTML = `
+                    <button id="debugSetToken" style="background-color: #ff9800;">Set Test Token</button>
+                    <input type="text" id="debugTokenInput" placeholder="Enter token here" style="width: 300px; margin-left: 10px;">
+                    <button id="debugTestAPI" style="background-color: #4caf50; margin-left: 10px;">Test API Connection</button>
+                `;
+                document.querySelector('.card h1').after(debugDiv);
+                
+                document.getElementById('debugSetToken').addEventListener('click', () => {
+                    const tokenValue = document.getElementById('debugTokenInput').value;
+                    if (tokenValue) {
+                        localStorage.setItem('userToken', tokenValue);
+                        displayMessage('Test token set, refreshing...', 'success');
+                        setTimeout(() => location.reload(), 1000);
+                    } else {
+                        displayMessage('Please enter a token value', 'error');
+                    }
+                });
+                
+                document.getElementById('debugTestAPI').addEventListener('click', () => {
+                    const token = localStorage.getItem('userToken');
+                    if (!token) {
+                        displayMessage('No token available. Please set a token first.', 'error');
+                        return;
+                    }
+                    
+                    displayMessage('Testing API connection...', 'success');
+                    
+                    // Test the API connection with a simple GET request
+                    fetch(`${baseUrl}/api/auth/verify`, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    })
+                    .then(response => {
+                        console.log('Test API response status:', response.status);
+                        return response.json().catch(e => {
+                            return { error: 'Failed to parse JSON response' };
+                        });
+                    })
+                    .then(data => {
+                        console.log('Test API response data:', data);
+                        if (data.valid) {
+                            displayMessage(`API connection successful! User: ${data.name}`, 'success');
+                        } else {
+                            displayMessage(`API connection failed: ${data.error || 'Unknown error'}`, 'error');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Test API error:', error);
+                        displayMessage(`API connection error: ${error.message}`, 'error');
+                    });
+                });
+            } else {
+                fetchUsers();
+                // Set up auto refresh with ability to pause
+                let refreshInterval;
+                let isEditing = false;
+                
+                // Function to start/stop the auto refresh
+                function toggleAutoRefresh(start) {
+                    if (start && !refreshInterval) {
+                        console.log('Starting auto refresh');
+                        refreshInterval = setInterval(fetchUsers, 3000);
+                    } else if (!start && refreshInterval) {
+                        console.log('Pausing auto refresh');
+                        clearInterval(refreshInterval);
+                        refreshInterval = null;
+                    }
+                }
+                
+                // Start auto refresh initially
+                toggleAutoRefresh(true);
+                
+                // Add global event listener to track edit state
+                document.addEventListener('editStateChange', function(e) {
+                    isEditing = e.detail.isEditing;
+                    toggleAutoRefresh(!isEditing);
+                });
+            }
+        });
+        
+        // Apply theme from localStorage
+                    function applyTheme() {
+                const savedTheme = localStorage.getItem('adminTheme') || 'light';
+                document.documentElement.setAttribute('data-theme', savedTheme);
+            }
+            
+            // Password change modal functions
+            function openPasswordModal(user) {
+                console.log('Opening password modal for user:', user);
+                
+                // Get modal elements
+                const passwordModal = document.getElementById('passwordModal');
+                const passwordModalMessage = document.getElementById('passwordModalMessage');
+                const passwordUserId = document.getElementById('passwordUserId');
+                const passwordUserIdno = document.getElementById('passwordUserIdno');
+                const changePasswordForm = document.getElementById('changePasswordForm');
+                
+                if (!passwordModal) {
+                    console.error('Password modal not found!');
+                    return;
+                }
+                
+                // Pause auto-refresh if it's active
+                document.dispatchEvent(new CustomEvent('editStateChange', {
+                    detail: { isEditing: true }
+                }));
+                
+                // Set user info in the form
+                if (passwordUserId) passwordUserId.value = user.id;
+                if (passwordUserIdno) passwordUserIdno.value = user.idno;
+                
+                // Clear previous form data and messages
+                if (changePasswordForm) changePasswordForm.reset();
+                if (passwordModalMessage) passwordModalMessage.className = 'hidden message';
+                
+                // Show the modal
+                passwordModal.style.display = 'block';
+            }
+            
+            // Password modal event listeners will be set up in initPasswordModal()
+            
+            // Initialize password modal elements and event listeners
+            function initPasswordModal() {
+                console.log('Initializing password modal');
+                
+                // Get modal elements
+                const passwordModal = document.getElementById('passwordModal');
+                const passwordModalMessage = document.getElementById('passwordModalMessage');
+                const changePasswordForm = document.getElementById('changePasswordForm');
+                const closeModalBtn = document.querySelector('.close-modal');
+                const cancelPasswordBtn = document.getElementById('cancelPasswordBtn');
+                
+                if (!passwordModal) {
+                    console.error('Password modal not found!');
+                    return;
+                }
+                
+                console.log('Found modal elements:', {
+                    modal: !!passwordModal,
+                    message: !!passwordModalMessage,
+                    form: !!changePasswordForm,
+                    closeBtn: !!closeModalBtn,
+                    cancelBtn: !!cancelPasswordBtn
+                });
+                
+                // Add close button event listener
+                if (closeModalBtn) {
+                    closeModalBtn.addEventListener('click', () => {
+                        console.log('Close button clicked');
+                        passwordModal.style.display = 'none';
+                        
+                        // Resume auto-refresh
+                        document.dispatchEvent(new CustomEvent('editStateChange', {
+                            detail: { isEditing: false }
+                        }));
+                    });
+                } else {
+                    console.error('Close modal button not found');
+                }
+                
+                // Add cancel button event listener
+                if (cancelPasswordBtn) {
+                    cancelPasswordBtn.addEventListener('click', () => {
+                        console.log('Cancel button clicked');
+                        passwordModal.style.display = 'none';
+                        
+                        // Resume auto-refresh
+                        document.dispatchEvent(new CustomEvent('editStateChange', {
+                            detail: { isEditing: false }
+                        }));
+                    });
+                } else {
+                    console.error('Cancel password button not found');
+                }
+                
+                // Close modal when clicking outside of it
+                window.addEventListener('click', (event) => {
+                    if (event.target === passwordModal) {
+                        console.log('Clicked outside modal');
+                        passwordModal.style.display = 'none';
+                        
+                        // Resume auto-refresh
+                        document.dispatchEvent(new CustomEvent('editStateChange', {
+                            detail: { isEditing: false }
+                        }));
+                    }
+                });
+                
+                return {
+                    modal: passwordModal,
+                    message: passwordModalMessage,
+                    form: changePasswordForm
+                };
+            }
+            
+            // Initialize modal elements
+            const modalElements = initPasswordModal();
+            
+            // Handle password change form submission
+            if (modalElements && modalElements.form) {
+                modalElements.form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const userId = passwordUserId.value;
+                const userIdno = passwordUserIdno.value;
+                const newPassword = document.getElementById('newPassword').value;
+                const confirmPassword = document.getElementById('confirmPassword').value;
+                
+                // Validate passwords match
+                if (newPassword !== confirmPassword) {
+                    showModalMessage('Passwords do not match!', 'error');
+                    return;
+                }
+                
+                // Validate password length
+                if (newPassword.length < 6) {
+                    showModalMessage('Password must be at least 6 characters long', 'error');
+                    return;
+                }
+                
+                // Prepare data for API call
+                const passwordData = {
+                    id: userId,
+                    idno: userIdno,
+                    password: newPassword
+                };
+                
+                console.log('Sending password update with data:', passwordData);
+                
+                const token = localStorage.getItem('userToken');
+                console.log('Using auth token:', token ? 'Token exists' : 'No token found');
+                console.log('API URL:', window.baseUrl + '/api/user/change_password');
+                
+                // Send password change request
+                fetch(`${window.baseUrl}/api/user/change_password`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(passwordData)
+                })
+                .then(response => {
+                    console.log('Password update response status:', response.status);
+                    
+                    // Log full response for debugging
+                    return response.text().then(text => {
+                        try {
+                            // Try to parse as JSON
+                            const data = JSON.parse(text);
+                            console.log('Password update response data:', data);
+                            
+                            if (!response.ok) {
+                                throw new Error(data.error || data.message || 'Failed to update password');
+                            }
+                            
+                            return data;
+                        } catch (e) {
+                            console.error('Error parsing response:', e);
+                            console.log('Raw response text:', text);
+                            
+                            if (!response.ok) {
+                                throw new Error(`Server error (${response.status}): ${text.substring(0, 100)}`);
+                            }
+                            
+                            return { success: response.ok };
+                        }
+                    });
+                })
+                .then(data => {
+                    showModalMessage('Password updated successfully!', 'success');
+                    // Close modal after 1.5 seconds
+                    setTimeout(() => {
+                        const passwordModal = document.getElementById('passwordModal');
+                        if (passwordModal) {
+                            passwordModal.style.display = 'none';
+                            
+                            // Resume auto-refresh
+                            document.dispatchEvent(new CustomEvent('editStateChange', {
+                                detail: { isEditing: false }
+                            }));
+                        }
+                    }, 1500);
+                })
+                .catch(error => {
+                    console.error('Error with first password update attempt:', error);
+                    showModalMessage('Trying alternative endpoint...', 'error');
+                    
+                    // Try alternative endpoint
+                    fetch(`${window.baseUrl}/api/update_user_password`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify(passwordData)
+                    })
+                    .then(response => {
+                        console.log('Alternative endpoint response status:', response.status);
+                        return response.text().then(text => {
+                            try {
+                                const data = JSON.parse(text);
+                                console.log('Alternative endpoint response data:', data);
+                                
+                                if (!response.ok) {
+                                    throw new Error(data.error || data.message || 'Failed to update password');
+                                }
+                                
+                                showModalMessage('Password updated successfully!', 'success');
+                                // Close modal after 1.5 seconds
+                                setTimeout(() => {
+                                    const passwordModal = document.getElementById('passwordModal');
+                                    if (passwordModal) {
+                                        passwordModal.style.display = 'none';
+                                        
+                                        // Resume auto-refresh
+                                        document.dispatchEvent(new CustomEvent('editStateChange', {
+                                            detail: { isEditing: false }
+                                        }));
+                                    }
+                                }, 1500);
+                                
+                                return data;
+                            } catch (e) {
+                                console.error('Error parsing alternative response:', e);
+                                throw new Error(`Server error: ${text.substring(0, 100)}`);
+                            }
+                        });
+                    })
+                    .catch(finalError => {
+                        console.error('Error with alternative password update attempt:', finalError);
+                        showModalMessage(finalError.message, 'error');
+                    });
+                });
+            });
+            
+            // Show message in the password modal
+            function showModalMessage(text, type) {
+                const passwordModalMessage = document.getElementById('passwordModalMessage');
+                
+                if (!passwordModalMessage) {
+                    console.error('Password modal message element not found!');
+                    return;
+                }
+                
+                passwordModalMessage.innerHTML = '<i class="fas fa-' + (type === 'success' ? 'check-circle' : 'exclamation-circle') + '"></i> ' + text;
+                passwordModalMessage.className = `message ${type}`;
+                
+                // Auto-hide success messages after 3 seconds
+                if (type === 'success') {
+                    setTimeout(() => {
+                        passwordModalMessage.classList.add('hidden');
+                    }, 3000);
+                }
+            }
+            }
+
+            // CSV Bulk Upload functionality
+            const csvFileInput = document.getElementById('csvFile');
+            const uploadCsvBtn = document.getElementById('uploadCsvBtn');
+            const csvPreview = document.getElementById('csvPreview');
+            const csvPreviewContent = document.getElementById('csvPreviewContent');
+            const confirmUploadBtn = document.getElementById('confirmUploadBtn');
+            const cancelUploadBtn = document.getElementById('cancelUploadBtn');
+            const uploadProgress = document.getElementById('uploadProgress');
+            const progressFill = document.getElementById('progressFill');
+            const processedCount = document.getElementById('processedCount');
+            const totalCount = document.getElementById('totalCount');
+            const uploadResults = document.getElementById('uploadResults');
+            const successCount = document.getElementById('successCount');
+            const errorCount = document.getElementById('errorCount');
+            const errorDetails = document.getElementById('errorDetails');
+            const errorList = document.getElementById('errorList');
+            const downloadSampleBtn = document.getElementById('downloadSampleBtn');
+            
+            let csvData = [];
+            
+            // Handle download sample CSV
+            downloadSampleBtn.addEventListener('click', function() {
+                const sampleData = [
+                    'idnumber,password,level,course/strand',
+                    '2023001,pass123,College,BS Computer Science',
+                    '2023002,pass456,College,BS Criminology',
+                    '2023003,pass789,SHS,STEM',
+                    '2023004,pass101,SHS,ABM'
+                ].join('\n');
+                
+                const blob = new Blob([sampleData], { type: 'text/csv' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.setAttribute('hidden', '');
+                a.setAttribute('href', url);
+                a.setAttribute('download', 'sample_users.csv');
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+            });
+            
+            // Handle CSV file selection
+            uploadCsvBtn.addEventListener('click', function() {
+                const file = csvFileInput.files[0];
+                if (!file) {
+                    displayMessage('Please select a CSV file first', 'error');
+                    return;
+                }
+                
+                // Parse CSV file
+                Papa.parse(file, {
+                    header: true,
+                    skipEmptyLines: true,
+                    complete: function(results) {
+                                                 if (results.errors.length > 0) {
+                            displayMessage(`Error parsing CSV: ${results.errors[0].message}`, 'error');
+                            return;
+                        }
+                        
+                        // Store parsed data
+                        csvData = results.data;
+                        
+                        if (csvData.length === 0) {
+                            displayMessage('CSV file is empty or has invalid format', 'error');
+                            return;
+                        }
+                        
+                        // Show preview
+                        displayCsvPreview(csvData);
+                        csvPreview.classList.remove('hidden');
+                        
+                        // Pause auto-refresh if it's active
+                        document.dispatchEvent(new CustomEvent('editStateChange', {
+                            detail: { isEditing: true }
+                        }));
+                    },
+                                         error: function(error) {
+                        displayMessage(`Error reading CSV file: ${error.message}`, 'error');
+                    }
+                });
+            });
+            
+            // Display CSV preview
+            function displayCsvPreview(data) {
+                // Create table
+                let tableHtml = '<table><thead><tr>';
+                
+                // Get headers
+                const headers = Object.keys(data[0]);
+                headers.forEach(header => {
+                    tableHtml += `<th>${header}</th>`;
+                });
+                
+                tableHtml += '</tr></thead><tbody>';
+                
+                // Add rows (limit to 10 for preview)
+                const previewLimit = Math.min(data.length, 10);
+                for (let i = 0; i < previewLimit; i++) {
+                    tableHtml += '<tr>';
+                    headers.forEach(header => {
+                        tableHtml += `<td>${data[i][header] || ''}</td>`;
+                    });
+                    tableHtml += '</tr>';
+                }
+                
+                tableHtml += '</tbody></table>';
+                
+                if (data.length > 10) {
+                    tableHtml += `<p>Showing 10 of ${data.length} records...</p>`;
+                }
+                
+                csvPreviewContent.innerHTML = tableHtml;
+            }
+            
+            // Cancel CSV upload
+            cancelUploadBtn.addEventListener('click', function() {
+                csvPreview.classList.add('hidden');
+                csvFileInput.value = '';
+                csvData = [];
+                
+                // Resume auto-refresh
+                document.dispatchEvent(new CustomEvent('editStateChange', {
+                    detail: { isEditing: false }
+                }));
+            });
+            
+            // Confirm and process CSV upload
+            confirmUploadBtn.addEventListener('click', function() {
+                if (csvData.length === 0) {
+                    displayMessage('No data to upload', 'error');
+                    return;
+                }
+                
+                // Hide preview and show progress
+                csvPreview.classList.add('hidden');
+                uploadProgress.classList.remove('hidden');
+                totalCount.textContent = csvData.length;
+                processedCount.textContent = '0';
+                progressFill.style.width = '0%';
+                
+                // Reset results
+                uploadResults.classList.add('hidden');
+                successCount.textContent = 'Successful: 0';
+                errorCount.textContent = 'Failed: 0';
+                errorList.innerHTML = '';
+                errorDetails.classList.add('hidden');
+                
+                // Process users
+                processUsers(csvData);
+            });
+            
+            // Process user uploads
+            async function processUsers(users) {
+                const token = localStorage.getItem('userToken');
+                let successfulUploads = 0;
+                let failedUploads = 0;
+                const errors = [];
+                
+                for (let i = 0; i < users.length; i++) {
+                    const user = users[i];
+                    
+                    // Check required fields
+                    const idNumber = user.idnumber;
+                    const password = user.password;
+                    const level = user.level;
+                    let courseOrStrand = user['course/strand'] || '';
+                    
+                    if (!idNumber || !password || !level) {
+                        failedUploads++;
+                        errors.push(`Row ${i+1}: Missing required fields (ID, password, or level)`);
+                        continue;
+                    }
+                    
+                    // Validate level
+                    if (level !== 'College' && level !== 'SHS') {
+                        failedUploads++;
+                        errors.push(`Row ${i+1}: Invalid level "${level}" - must be "College" or "SHS"`);
+                        continue;
+                    }
+                    
+                    // Create user data
+                    let course = null;
+                    let strand = null;
+                    
+                    if (level === 'College') {
+                        course = courseOrStrand;
+                    } else {
+                        strand = courseOrStrand;
+                    }
+                    
+                    const userData = {
+                        idno: idNumber,
+                        name: "New User", // Auto-filled
+                        email: `${idNumber}@student.aisat.edu.ph`, // Auto-generated email
+                        password: password,
+                        level: level,
+                        course: course,
+                        strand: strand,
+                        cell: null // Auto-filled with NULL
+                    };
+                    
+                    try {
+                        // Call API to add user
+                        const response = await fetch(`${baseUrl}/api/auth/create_public_user`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${token}`
+                            },
+                            body: JSON.stringify(userData)
+                        });
+                        
+                        const data = await response.json();
+                        
+                        if (!response.ok) {
+                            failedUploads++;
+                            errors.push(`Row ${i+1} (${idNumber}): ${data.error || 'Unknown error'}`);
+                        } else {
+                            successfulUploads++;
+                        }
+                    } catch (error) {
+                        failedUploads++;
+                        errors.push(`Row ${i+1} (${idNumber}): ${error.message}`);
+                    }
+                    
+                    // Update progress
+                    processedCount.textContent = i + 1;
+                    const progress = Math.round(((i + 1) / users.length) * 100);
+                    progressFill.style.width = `${progress}%`;
+                    
+                    // Update results
+                    successCount.textContent = `Successful: ${successfulUploads}`;
+                    errorCount.textContent = `Failed: ${failedUploads}`;
+                    
+                    // Show error details if any
+                    if (errors.length > 0) {
+                        errorDetails.classList.remove('hidden');
+                        errorList.innerHTML = errors.map(error => `<li>${error}</li>`).join('');
+                    }
+                    
+                    // Small delay to prevent UI freezing
+                    await new Promise(resolve => setTimeout(resolve, 50));
+                }
+                
+                // Complete
+                uploadResults.classList.remove('hidden');
+                
+                // If no errors, hide error section
+                if (errors.length === 0) {
+                    errorDetails.classList.add('hidden');
+                }
+                
+                // Reset file input
+                csvFileInput.value = '';
+                csvData = [];
+                
+                // Refresh users list
+                fetchUsers();
+                
+                // Resume auto-refresh
+                document.dispatchEvent(new CustomEvent('editStateChange', {
+                    detail: { isEditing: false }
+                }));
+            }
+    </script>
+</body>
+</html>

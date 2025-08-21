@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Settings</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            /* Only 3 colors as requested */
+            --primary: #3498db;
+            --secondary: #2c3e50; 
+            --white: #ffffff;
+
+            /* Derived colors (shades and transparency of the 3 base colors) */
+            --light-bg: #f5f8fb;
+            --sidebar-active: rgba(52, 152, 219, 0.1);
+            --border-color: rgba(44, 62, 80, 0.1);
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --text-muted: rgba(44, 62, 80, 0.6);
+            --input-bg: var(--white);
+            --input-border: rgba(44, 62, 80, 0.2);
+        }
+        
+        [data-theme="dark"] {
+            --light-bg: #16213e;
+            --sidebar-active: rgba(76, 201, 240, 0.1);
+            --border-color: #2a2a4a;
+            --text-muted: #a0aec0;
+            --secondary: #e6e6e6;
+            --input-bg: #1a1a2e;
+            --input-border: #2a2a4a;
+            --primary: #4cc9f0;
+            --white: #1a1a2e;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--light-bg);
+            color: var(--secondary);
+            transition: background-color 0.3s, color 0.3s;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Main content area */
+        .main-content {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .dashboard-header {
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .dashboard-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--secondary);
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        /* Settings sections */
+        .settings-section {
+            background-color: var(--white);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .settings-section h2 {
+            color: var(--secondary);
+            margin-bottom: 20px;
+            font-weight: 500;
+            font-size: 18px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        /* Form styles */
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .form-group input[type="text"],
+        .form-group input[type="email"],
+        .form-group input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--input-border);
+            border-radius: 6px;
+            background-color: var(--input-bg);
+            color: var(--secondary);
+            font-size: 14px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .form-group input:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+        }
+        
+        .checkbox-group {
+            margin-top: 16px;
+        }
+        
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        
+        .checkbox-container input[type="checkbox"] {
+            margin-right: 10px;
+            width: 16px;
+            height: 16px;
+        }
+
+        .checkbox-container label {
+            cursor: pointer;
+            color: var(--secondary);
+            display: inline;
+            margin: 0;
+        }
+
+        .btn {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 14px;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: var(--white);
+        }
+
+        .btn-primary:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+        
+        .btn-danger {
+            background-color: var(--danger-color);
+            color: var(--white);
+        }
+        
+        .btn-danger:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+        
+        .alert {
+            padding: 12px 16px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            border-left: 4px solid;
+            display: flex;
+            align-items: center;
+        }
+        
+        .alert-success {
+            background-color: rgba(46, 204, 113, 0.1);
+            border-color: var(--success-color);
+            color: var(--success-color);
+        }
+        
+        .alert-danger {
+            background-color: rgba(231, 76, 60, 0.1);
+            border-color: var(--danger-color);
+            color: var(--danger-color);
+        }
+
+        .alert i {
+            margin-right: 10px;
+            font-size: 16px;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        /* Theme toggle styles */
+        .theme-toggle {
+            display: flex;
+            align-items: center;
+            color: var(--secondary);
+            cursor: pointer;
+        }
+        
+        .theme-toggle i {
+            font-size: 16px;
+            margin-right: 8px;
+        }
+        
+        .toggle-switch {
+            position: relative;
+            width: 40px;
+            height: 20px;
+            background-color: #e2e2e2;
+            border-radius: 10px;
+            transition: background-color 0.3s;
+            margin-left: 8px;
+        }
+        
+        .toggle-switch.active {
+            background-color: var(--primary);
+        }
+        
+        .toggle-track {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 16px;
+            height: 16px;
+            background-color: white;
+            border-radius: 50%;
+            transition: transform 0.3s;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+        }
+        
+        .toggle-switch.active .toggle-track {
+            transform: translateX(20px);
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 20px;
+            }
+            
+            .dashboard-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            
+            .header-actions {
+                width: 100%;
+                justify-content: space-between;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Main content -->
+    <div class="main-content">
+        <div class="dashboard-header">
+            <h1 class="dashboard-title">Admin Settings</h1>
+            <div class="header-actions">
+                <!-- Added Sign out button with minimal style -->
+                <button id="signoutButton" class="btn btn-danger" style="display: flex; align-items: center; gap: 6px;">
+                    <i class="fas fa-sign-out-alt"></i> Sign Out
+                </button>
+            </div>
+        </div>
+
+        <!-- Alert message -->
+        <div id="message" class="hidden"></div>
+        
+        <!-- Profile settings section -->
+        <div class="settings-section">
+            <h2><i class="fas fa-user-circle"></i> Profile Information</h2>
+            <form id="profile-form">
+                <div class="form-group">
+                    <label for="fullName">Full Name</label>
+                    <input type="text" id="fullName" name="fullName" required>
+                </div>
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="idNo">ID Number</label>
+                    <input type="text" id="idNo" name="idNo" required>
+                </div>
+                <div class="form-group">
+                    <label for="contactNo">Contact Number</label>
+                    <input type="text" id="contactNo" name="contactNo" required>
+                </div>
+                <div class="form-group">
+                    <label for="roomName">Room Name/Number</label>
+                    <input type="text" id="roomName" name="roomName">
+                </div>
+                <div class="form-group">
+                    <label for="currentPassword">Current Password (required to save changes)</label>
+                    <input type="password" id="currentPassword" name="currentPassword" required>
+                </div>
+                <div class="form-group">
+                    <label for="newPassword">New Password (leave blank to keep current)</label>
+                    <input type="password" id="newPassword" name="newPassword">
+                </div>
+                <div class="form-group">
+                    <label for="confirmPassword">Confirm New Password</label>
+                    <input type="password" id="confirmPassword" name="confirmPassword">
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Save Profile
+                </button>
+            </form>
+        </div>
+        
+        <!-- Request filter settings -->
+        <div class="settings-section">
+            <h2><i class="fas fa-filter"></i> Request Filter Settings</h2>
+            <p style="color: var(--text-muted); margin-bottom: 16px;">Select which types of requests you want to see and handle:</p>
+            
+            <div class="checkbox-group">
+                <div class="checkbox-container">
+                    <input type="checkbox" id="expressRequests" name="requestTypes" value="express" checked>
+                    <label for="expressRequests">Express Requests</label>
+                </div>
+                <div class="checkbox-container">
+                    <input type="checkbox" id="regularRequests" name="requestTypes" value="regular" checked>
+                    <label for="regularRequests">Regular Requests</label>
+                </div>
+                <div class="checkbox-container">
+                    <input type="checkbox" id="priorityRequests" name="requestTypes" value="priority" checked>
+                    <label for="priorityRequests">Priority Requests</label>
+                </div>
+            </div>
+            
+            <button id="save-filters" class="btn btn-primary">
+                <i class="fas fa-check"></i> Save Filter Settings
+            </button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Apply theme from localStorage on page load
+            const currentTheme = localStorage.getItem('adminTheme') || 'light';
+            
+            if (currentTheme === 'dark') {
+                document.documentElement.setAttribute('data-theme', 'dark');
+            }
+            
+            // Check if we have a token before making API calls
+            const token = localStorage.getItem('userToken');
+            if (!token) {
+                showMessage('<i class="fas fa-exclamation-circle"></i> Authentication required. Please log in.', 'danger');
+                return;
+            }
+
+            // Load admin profile data
+            loadAdminProfile();
+            
+            // Load saved filter settings
+            loadFilterSettings();
+            
+            // Set up form submission for profile updates
+            document.getElementById('profile-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                updateAdminProfile();
+            });
+            
+            // Set up save button for filter settings
+            document.getElementById('save-filters').addEventListener('click', saveFilterSettings);
+            
+            // Sign out button functionality (minimalist implementation)
+            document.getElementById('signoutButton').addEventListener('click', function() {
+                if (confirm('Are you sure you want to sign out?')) {
+                    // Clear storage
+                    localStorage.clear();
+                    sessionStorage.clear();
+                    
+                    // Signal logout to main application
+                    console.log({type: 'logout', action: 'user_initiated'});
+                    console.log("LOGOUT EVENT: User clicked sign out button");
+                    
+                    // Redirect to auth page
+                    window.location.href = '../auth.html?logout=true';
+                }
+            });
+        });
+
+        const baseUrl = "https://jimboyaczon.pythonanywhere.com";
+        
+        function loadAdminProfile() {
+            const token = localStorage.getItem('userToken');
+            
+            fetch(`${baseUrl}/api/admin/profile`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+            .then(response => {
+                if (response.status === 401) {
+                    throw new Error('Your session has expired. Please log in again.');
+                }
+                if (!response.ok) {
+                    throw new Error(`Server responded with ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Fill in the form fields with the admin's data
+                document.getElementById('fullName').value = data.full_name || '';
+                document.getElementById('email').value = data.email || '';
+                document.getElementById('idNo').value = data.id_no || '';
+                document.getElementById('contactNo').value = data.contact_no || '';
+                document.getElementById('roomName').value = data.room_name || '';
+            })
+            .catch(error => {
+                console.error('Error loading admin profile:', error);
+                showMessage(`<i class="fas fa-exclamation-circle"></i> ${error.message}`, 'danger');
+            });
+        }
+        
+        function updateAdminProfile() {
+            const token = localStorage.getItem('userToken');
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            // Validate passwords if changing
+            if (newPassword) {
+                if (newPassword !== confirmPassword) {
+                    showMessage('<i class="fas fa-exclamation-triangle"></i> New passwords do not match', 'danger');
+                    return;
+                }
+            }
+            
+            const profileData = {
+                full_name: document.getElementById('fullName').value,
+                email: document.getElementById('email').value,
+                id_no: document.getElementById('idNo').value,
+                contact_no: document.getElementById('contactNo').value,
+                room_name: document.getElementById('roomName').value,
+                current_password: currentPassword,
+                new_password: newPassword || null
+            };
+            
+            fetch(`${baseUrl}/api/admin/update-profile`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(profileData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showMessage('<i class="fas fa-check-circle"></i> Profile updated successfully!', 'success');
+                    // Clear password fields after successful update
+                    document.getElementById('currentPassword').value = '';
+                    document.getElementById('newPassword').value = '';
+                    document.getElementById('confirmPassword').value = '';
+                } else {
+                    throw new Error(data.error || 'Failed to update profile');
+                }
+            })
+            .catch(error => {
+                console.error('Error updating admin profile:', error);
+                showMessage(`<i class="fas fa-exclamation-circle"></i> ${error.message}`, 'danger');
+            });
+        }
+        
+        function loadFilterSettings() {
+            // Load from localStorage
+            try {
+                const filterSettings = JSON.parse(localStorage.getItem('adminFilterSettings')) || {};
+                
+                // Set default to checked if no settings found
+                document.getElementById('expressRequests').checked = filterSettings.express !== false;
+                document.getElementById('regularRequests').checked = filterSettings.regular !== false;
+                document.getElementById('priorityRequests').checked = filterSettings.priority !== false;
+            } catch (e) {
+                console.error('Error loading filter settings:', e);
+                // Default all to checked
+                document.getElementById('expressRequests').checked = true;
+                document.getElementById('regularRequests').checked = true;
+                document.getElementById('priorityRequests').checked = true;
+            }
+        }
+        
+        function saveFilterSettings() {
+            const filterSettings = {
+                express: document.getElementById('expressRequests').checked,
+                regular: document.getElementById('regularRequests').checked,
+                priority: document.getElementById('priorityRequests').checked
+            };
+            
+            // Save to localStorage (global settings)
+            localStorage.setItem('adminFilterSettings', JSON.stringify(filterSettings));
+            
+            // Also save to server if possible
+            const token = localStorage.getItem('userToken');
+            if (token) {
+                // First get admin ID to save admin-specific settings
+                fetch(`${baseUrl}/api/admin/profile`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                })
+                .then(response => response.json())
+                .then(adminData => {
+                    if (adminData && adminData.id) {
+                        const adminId = adminData.id;
+                        console.log(`Saving filter settings for admin ${adminId}:`, filterSettings);
+                        
+                        // Save to server
+                        fetch(`${baseUrl}/api/admin/save-settings`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${token}`
+                            },
+                            body: JSON.stringify({
+                                settings: {
+                                    filter_settings: filterSettings
+                                }
+                            })
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                console.log('Filter settings saved to server successfully');
+                                
+                                // Also update the TV display data with the admin's filter settings
+                                fetch(`${baseUrl}/api/tv_display_data`)
+                                    .then(response => response.json())
+                                    .then(tvData => {
+                                        // Find the display data for this admin
+                                        for (const displayId in tvData) {
+                                            if (displayId !== 'lastUpdated') {
+                                                const displayData = tvData[displayId];
+                                                if (displayData && displayData.adminWindows) {
+                                                    // Update the admin's filter settings
+                                                    if (displayData.adminWindows[adminId]) {
+                                                        displayData.adminWindows[adminId].filterSettings = filterSettings;
+                                                        
+                                                        // Send the updated data back to the server
+                                                        fetch(`${baseUrl}/api/tv_display_data`, {
+                                                            method: 'POST',
+                                                            headers: {
+                                                                'Content-Type': 'application/json'
+                                                            },
+                                                            body: JSON.stringify(tvData)
+                                                        })
+                                                        .then(response => response.json())
+                                                        .then(result => {
+                                                            console.log('Updated TV display data with filter settings');
+                                                        })
+                                                        .catch(error => {
+                                                            console.error('Error updating TV display data:', error);
+                                                        });
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    })
+                                    .catch(error => {
+                                        console.error('Error getting TV display data:', error);
+                                    });
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error saving settings to server:', error);
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error getting admin profile:', error);
+                });
+            }
+            
+            showMessage('<i class="fas fa-check-circle"></i> Filter settings saved successfully!', 'success');
+        }
+        
+        function showMessage(message, type) {
+            const messageDiv = document.getElementById('message');
+            messageDiv.innerHTML = message;
+            messageDiv.className = type === 'danger' ? 'alert alert-danger' : 'alert alert-success';
+            messageDiv.classList.remove('hidden');
+            
+            // Hide the message after 5 seconds
+                setTimeout(() => {
+                    messageDiv.classList.add('hidden');
+            }, 5000);
+        }
+    </script>
+</body>
+</html>

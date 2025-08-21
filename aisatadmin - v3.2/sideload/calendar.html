@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Schedule Calendar</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      /* Only 3 colors as requested */
+      --primary: #3498db;
+      --secondary: #2c3e50; 
+      --white: #ffffff;
+
+      /* Derived colors (shades and transparency of the 3 base colors) */
+      --light-bg: #f5f8fb;
+      --sidebar-active: rgba(52, 152, 219, 0.1);
+      --border-color: rgba(44, 62, 80, 0.1);
+      --success-color: #2ecc71;
+      --warning-color: #f39c12;
+      --danger-color: #e74c3c;
+      --text-muted: rgba(44, 62, 80, 0.6);
+      --input-bg: var(--white);
+      --input-border: rgba(44, 62, 80, 0.2);
+      --day-unavail-bg: #f1f3f5;
+      --day-unavail-color: #adb5bd;
+      --day-unavail-border: #dee2e6;
+    }
+    
+    [data-theme="dark"] {
+      --light-bg: #16213e;
+      --sidebar-active: rgba(76, 201, 240, 0.1);
+      --border-color: #2a2a4a;
+      --text-muted: #a0aec0;
+      --secondary: #e6e6e6;
+      --input-bg: #1a1a2e;
+      --input-border: #2a2a4a;
+      --primary: #4cc9f0;
+      --white: #1a1a2e;
+      --day-unavail-bg: #1a1a2e;
+      --day-unavail-color: #727072;
+      --day-unavail-border: #2a2a4a;
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    
+    body {
+      background-color: var(--light-bg);
+      color: var(--secondary);
+      transition: background-color 0.3s, color 0.3s;
+      overflow-x: hidden;
+    }
+    
+    .main-content {
+      padding: 30px;
+      overflow-y: auto;
+    }
+    
+    .dashboard-header {
+      margin-bottom: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .dashboard-title {
+      font-size: 24px;
+      font-weight: 600;
+      color: var(--secondary);
+    }
+    
+    .header-controls {  
+      display: flex;
+      gap: 10px;
+    }
+    
+    select {
+      padding: 8px 12px;
+      border: 1px solid var(--input-border);
+      border-radius: 6px;
+      background-color: var(--input-bg);
+      color: var(--secondary);
+      font-size: 14px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      cursor: pointer;
+    }
+    
+    select:focus {
+      border-color: var(--primary);
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+    }
+    
+    .settings-section {
+      background-color: var(--white);
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 24px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      height: 700px;
+    }
+    
+    .status-indicator {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 20px;
+      gap: 20px;
+    }
+    
+    .status-item {
+      display: flex;
+      align-items: center;
+    }
+    
+    .status-color {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      margin-right: 8px;
+    }
+    
+    .status-open {
+      background-color: var(--success-color);
+    }
+    
+    .status-full {
+      background-color: var(--danger-color);
+    }
+    
+    .status-unavail {
+      background-color: var(--day-unavail-bg);
+      border: 1px solid var(--day-unavail-border);
+    }
+    
+    .calendar {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      grid-template-rows: auto repeat(6, 1fr);
+      gap: 8px;
+      flex-grow: 1;
+      width: 600px;
+      height: 500px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    
+    .day-name { 
+      font-weight: 600;
+      text-align: center;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 0;
+      font-size: 14px;
+      text-transform: uppercase;
+    }
+    
+    .day {
+      border: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      border-radius: 6px;
+      font-size: 16px;
+      font-weight: 500;
+      aspect-ratio: 1;
+    }
+    
+    .day.full {
+      background-color: var(--danger-color);
+      color: white;
+      border-color: var(--danger-color);
+      cursor: not-allowed;
+    }
+    
+    .day.open {
+      background-color: var(--success-color);
+      color: white;
+      border-color: var(--success-color);
+    }
+    
+    .day.unavail {
+      background-color: var(--day-unavail-bg);
+      color: var(--day-unavail-color);
+      cursor: not-allowed;
+    }
+    
+    .loading {
+      text-align: center;
+      padding: 20px;
+      color: var(--text-muted);
+      font-style: italic;
+    }
+    
+    #statusMessage {
+      padding: 12px 16px;
+      border-radius: 6px;
+      margin-bottom: 20px;
+      border-left: 4px solid;
+      display: flex;
+      align-items: center;
+      display: none;
+    }
+    
+    #statusMessage i {
+      margin-right: 10px;
+      font-size: 16px;
+    }
+    
+    .success {
+      background-color: rgba(46, 204, 113, 0.1);
+      border-color: var(--success-color);
+      color: var(--success-color);
+    }
+    
+    .error {
+      background-color: rgba(231, 76, 60, 0.1);
+      border-color: var(--danger-color);
+      color: var(--danger-color);
+    }
+    
+    @media (max-width: 768px) {
+      .main-content {
+        padding: 20px;
+      }
+      
+      .dashboard-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+      }
+      
+      .header-controls {
+        width: 100%;
+      }
+      
+      select {
+        flex: 1;
+      }
+      
+      .day {
+        font-size: 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="main-content">
+    <div class="dashboard-header">
+      <h1 class="dashboard-title">Schedule Calendar</h1>
+      <div class="header-controls">
+        <select id="monthSelect"></select>
+        <select id="yearSelect"></select>
+      </div>
+    </div>
+    
+    <div class="settings-section">
+      <div class="status-indicator">
+        <div class="status-item">
+          <div class="status-color status-open"></div>
+          <span>Open</span>
+        </div>
+        <div class="status-item">
+          <div class="status-color status-full"></div>
+          <span>Full</span>
+        </div>
+        <div class="status-item">
+          <div class="status-color status-unavail"></div>
+          <span>Unavailable</span>
+        </div>
+      </div>
+        
+      <div id="statusMessage"></div>
+      <div id="loadingMessage" class="loading">
+        <i class="fas fa-spinner fa-spin"></i> Loading calendar data...
+      </div>
+      <div class="calendar" id="calendar"></div>
+    </div>
+  </div>
+  
+  <script>
+    // Define baseUrl globally
+    const baseUrl = "https://jimboyaczon.pythonanywhere.com";
+    
+    // Global variables for calendar
+    const calendarDiv = document.getElementById('calendar');
+    const monthSelect = document.getElementById('monthSelect');
+    const yearSelect = document.getElementById('yearSelect');
+    const loadingMessage = document.getElementById('loadingMessage');
+    const statusMessage = document.getElementById('statusMessage');
+    const statuses = ['unavail', 'open', 'full'];
+    
+    let isRendering = false;
+    const today = new Date();
+    let currentMonth = today.getMonth();
+    let currentYear = today.getFullYear();
+
+    document.addEventListener('DOMContentLoaded', () => {
+      // Check token first
+      const token = localStorage.getItem('userToken');
+      console.log("Calendar page loaded, checking token...");
+      if (!token) {
+        console.error("No token found in localStorage!");
+        showMessage('Authentication error. Please log in again.', true);
+      } else {
+        console.log(`Token found (length: ${token.length})`);
+      }
+      
+      // Apply saved theme
+      applyTheme();
+      
+      // Rest of initialization code
+      initCalendar();
+      
+      // Initial render
+      renderCalendar();
+      
+      // Set up auto refresh with less frequency to reduce server load
+      setInterval(fetchCalendarData, 5000);
+    });
+    
+    // Apply theme from localStorage
+    function applyTheme() {
+      const savedTheme = localStorage.getItem('adminTheme') || 'light';
+      document.documentElement.setAttribute('data-theme', savedTheme);
+    }
+    
+    function initCalendar() {
+      const monthNames = [...Array(12).keys()].map(i => new Date(0, i).toLocaleString('default', { month: 'long' }));
+
+      monthNames.forEach((name, index) => {
+        const option = document.createElement('option');
+        option.value = index;
+        option.textContent = name;
+        monthSelect.appendChild(option);
+      });
+
+      for (let y = currentYear - 2; y <= currentYear + 2; y++) {
+        const option = document.createElement('option');
+        option.value = y;
+        option.textContent = y;
+        yearSelect.appendChild(option);
+      }
+
+      monthSelect.value = currentMonth;
+      yearSelect.value = currentYear;
+        
+      // Set up event listeners and render calendar
+      monthSelect.addEventListener('change', () => {
+        currentMonth = parseInt(monthSelect.value);
+        renderCalendar();
+      });
+      
+      yearSelect.addEventListener('change', () => {
+        currentYear = parseInt(yearSelect.value);
+        renderCalendar();
+      });
+    }
+
+    function showMessage(message, isError = false) {
+      statusMessage.innerHTML = isError ? 
+        `<i class="fas fa-exclamation-circle"></i> ${message}` : 
+        `<i class="fas fa-check-circle"></i> ${message}`;
+      statusMessage.className = isError ? 'error' : 'success';
+      statusMessage.style.display = 'flex';
+      
+      setTimeout(() => {
+        statusMessage.style.display = 'none';
+      }, 3000);
+    }
+    
+    // Function to fetch calendar data without rebuilding the entire grid
+    function fetchCalendarData() {
+      if (isRendering) return;
+      
+      // Only fetch if calendar exists
+      if (calendarDiv.querySelectorAll('.day').length === 0) return;
+      
+      fetch(`${baseUrl}/api/calendar`)
+        .then(res => res.ok ? res.json() : Promise.reject(new Error(`Server returned status ${res.status}`)))
+        .then(calendarData => {
+          // Update days of current month
+          const dayElements = calendarDiv.querySelectorAll('.day');
+          const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+          const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+          
+          // Update only the days in current month with new data
+          for (let i = 1; i <= daysInMonth; i++) {
+            const index = firstDay + i - 1;
+            if (index < dayElements.length) {
+              const dayEl = dayElements[index];
+              
+              const date = new Date(currentYear, currentMonth, i);
+              const year = date.getFullYear();
+              const month = String(date.getMonth() + 1).padStart(2, '0');
+              const day = String(date.getDate()).padStart(2, '0');
+              const dateStr = `${year}-${month}-${day}`;
+              const status = calendarData[dateStr] || 'unavail';
+              
+              // Only update if status changed to prevent unnecessary DOM operations
+              if (!dayEl.dataset.status || dayEl.dataset.status !== status) {
+                dayEl.className = `day ${status}`;
+                dayEl.dataset.status = status;
+              }
+            }
+          }
+        })
+        .catch(err => {
+          console.error("Calendar data fetch error:", err);
+          // Silently fail on background updates - don't show error messages
+        });
+    }
+
+    function renderCalendar() {
+      if (isRendering) return;
+      isRendering = true;
+
+      // Only show loading indicator on initial render
+      if (calendarDiv.querySelectorAll('.day').length === 0) {
+        loadingMessage.style.display = 'block';
+      }
+
+      // Keep day names static
+      if (calendarDiv.querySelectorAll('.day-name').length === 0) {
+        const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        for (let d of dayNames) {
+          const dayName = document.createElement('div');
+          dayName.className = 'day-name';
+          dayName.textContent = d;
+          calendarDiv.appendChild(dayName);
+        }
+      }
+
+      const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+      const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+
+      // Initialize calendar grid if it doesn't exist yet
+      const initialRender = calendarDiv.querySelectorAll('.day').length === 0;
+
+      if (initialRender) {
+        // Days from previous month
+        for (let i = firstDay; i > 0; i--) {
+          const dayEl = document.createElement('div');
+          dayEl.className = 'day unavail';
+          dayEl.textContent = '';
+          calendarDiv.appendChild(dayEl);
+        }
+
+        // Days of current month
+        for (let i = 1; i <= daysInMonth; i++) {
+          const dayEl = document.createElement('div');
+          dayEl.className = 'day unavail';
+          dayEl.textContent = i;
+          dayEl.dataset.day = i;
+          calendarDiv.appendChild(dayEl);
+        }
+        
+        // Days from next month
+        const totalGridCells = 42; // 6 rows * 7 columns
+        const currentCells = firstDay + daysInMonth;
+        const remainingCells = totalGridCells - currentCells;
+
+        for (let i = 1; i <= remainingCells; i++) {
+          const dayEl = document.createElement('div');
+          dayEl.className = 'day unavail';
+          dayEl.textContent = '';
+          calendarDiv.appendChild(dayEl);
+        }
+      } else {
+        // If month/year changed, need to recreate the grid
+        const existingDays = calendarDiv.querySelectorAll('.day');
+        if (existingDays.length !== firstDay + daysInMonth + (42 - (firstDay + daysInMonth))) {
+          // Clear and recreate
+          calendarDiv.querySelectorAll('.day').forEach(el => el.remove());
+          isRendering = false;
+          renderCalendar();
+          return;
+        }
+      }
+
+      // Update data without recreating the entire calendar
+      const updateCalendarData = (calendarData = {}) => {
+        loadingMessage.style.display = 'none';
+        
+        // Update days of current month
+        const dayElements = calendarDiv.querySelectorAll('.day');
+        
+        // Skip placeholder days from previous month
+        for (let i = 1; i <= daysInMonth; i++) {
+          const index = firstDay + i - 1;
+          if (index < dayElements.length) {
+            const dayEl = dayElements[index];
+            
+            const date = new Date(currentYear, currentMonth, i);
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const dateStr = `${year}-${month}-${day}`;
+            const status = calendarData[dateStr] || 'unavail';
+
+            // Only update if status changed
+            if (!dayEl.dataset.status || dayEl.dataset.status !== status) {
+              dayEl.className = `day ${status}`;
+              dayEl.dataset.status = status;
+            }
+
+            dayEl.textContent = i;
+            dayEl.dataset.date = dateStr;
+
+            // Ensure click handler is attached
+            if (!dayEl.onclick) {
+              dayEl.onclick = () => {
+                const token = localStorage.getItem('userToken');
+                if (!token) {
+                  showMessage('Authentication error. Please log in again.', true);
+                  return;
+                }
+                const current = dayEl.dataset.status;
+                const next = statuses[(statuses.indexOf(current) + 1) % statuses.length];
+                dayEl.textContent = '...';
+                fetch(`${baseUrl}/api/calendar`, {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                  },
+                  body: JSON.stringify({
+                    date: dateStr,
+                    status: next
+                  })
+                })
+                .then(response => response.ok ? response.json() : Promise.reject(new Error(`Server returned status ${response.status}`)))
+                .then(data => {
+                  dayEl.className = `day ${next}`;
+                  dayEl.dataset.status = next;
+                  dayEl.textContent = i;
+                  showMessage(`Updated ${dateStr} to ${next}`);
+                })
+                .catch(err => {
+                  console.error("Calendar update error:", err);
+                  dayEl.className = `day ${current}`;
+                  dayEl.dataset.status = current;
+                  dayEl.textContent = i;
+                  showMessage(`Failed to update calendar: ${err.message}`, true);
+                });
+              };
+            }
+          }
+        }
+      };
+
+      // Use AJAX to fetch calendar data without causing UI to flash
+      fetch(`${baseUrl}/api/calendar`)
+        .then(res => res.ok ? res.json() : Promise.reject(new Error(`Server returned status ${res.status}`)))
+        .then(updateCalendarData)
+        .catch(err => {
+          console.error("Calendar fetch error:", err);
+          if (initialRender) {
+            showMessage(`Failed to load calendar data. Falling back to unavailable.`, true);
+            updateCalendarData(); // Render an empty/unavailable calendar on error
+          }
+        })
+        .finally(() => {
+          isRendering = false;
+        });
+    }
+  </script>
+</body>
+</html>

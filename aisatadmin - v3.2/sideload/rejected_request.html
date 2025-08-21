@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rejected Requests</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            /* Only 3 colors as requested */
+            --primary: #3498db;
+            --secondary: #2c3e50; 
+            --white: #ffffff;
+
+            /* Derived colors (shades and transparency of the 3 base colors) */
+            --light-bg: #f5f8fb;
+            --sidebar-active: rgba(52, 152, 219, 0.1);
+            --border-color: rgba(44, 62, 80, 0.1);
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --text-muted: rgba(44, 62, 80, 0.6);
+            --input-bg: var(--white);
+            --input-border: rgba(44, 62, 80, 0.2);
+            --table-even-row: #f8f9fa;
+            --table-hover: #e9ecef;
+            --table-selected: #e7f5ff;
+            --action-bar-bg: #343a40;
+        }
+        
+        [data-theme="dark"] {
+            --light-bg: #16213e;
+            --sidebar-active: rgba(76, 201, 240, 0.1);
+            --border-color: #2a2a4a;
+            --text-muted: #a0aec0;
+            --secondary: #e6e6e6;
+            --input-bg: #1a1a2e;
+            --input-border: #2a2a4a;
+            --primary: #4cc9f0;
+            --white: #1a1a2e;
+            --table-even-row: #252525;
+            --table-hover: #2a2a4a;
+            --table-selected: #364954;
+            --action-bar-bg: #1a1a2e;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--light-bg);
+            color: var(--secondary);
+            transition: background-color 0.3s, color 0.3s;
+            overflow-x: hidden;
+        }
+        
+        .main-content {
+            padding: 30px;
+            overflow-y: auto;
+            padding-bottom: 80px; /* Add padding to prevent content from being hidden behind fixed action bar */
+        }
+        
+        .dashboard-header {
+            margin-bottom: 24px;
+        }
+        
+        .dashboard-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--secondary);
+            margin-bottom: 16px;
+        }
+        
+        .settings-section {
+            background-color: var(--white);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+        
+        .settings-section h2 {
+            color: var(--secondary);
+            margin-bottom: 20px;
+            font-weight: 500;
+            font-size: 18px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .search-container {
+            margin-bottom: 20px;
+            position: relative;
+        }
+        
+        .search-container input {
+            width: 100%;
+            max-width: 400px;
+            padding: 10px 10px 10px 35px;
+            border: 1px solid var(--input-border);
+            border-radius: 6px;
+            background-color: var(--input-bg);
+            color: var(--secondary);
+            font-size: 14px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        
+        .search-container input:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+        }
+        
+        .search-container i {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        th {
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            cursor: pointer;
+        }
+        
+        th:hover {
+            color: var(--primary);
+        }
+        
+        tr:nth-child(even) {
+            background-color: var(--table-even-row);
+        }
+        
+        tr.selectable {
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        tr.selectable:hover {
+            background-color: var(--table-hover);
+        }
+        
+        tr.selected {
+            background-color: var(--table-selected);
+            font-weight: 500;
+        }
+        
+        /* Request ID styling */
+        td:first-child {
+            color: var(--primary);
+            font-family: monospace;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        
+        .loading, .empty {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-muted);
+            font-size: 16px;
+        }
+        
+        .action-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: var(--action-bar-bg);
+            padding: 15px;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            z-index: 1000;
+            transition: transform 0.3s ease;
+            transform: translateY(100%);
+        }
+        
+        .action-bar.visible {
+            transform: translateY(0);
+        }
+        
+        .btn {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+        
+        .btn-danger {
+            background-color: var(--danger-color);
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+        
+        .message {
+            padding: 12px 16px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            border-left: 4px solid;
+            display: flex;
+            align-items: center;
+        }
+        
+        .message i {
+            margin-right: 10px;
+            font-size: 16px;
+        }
+        
+        .success {
+            background-color: rgba(46, 204, 113, 0.1);
+            border-color: var(--success-color);
+            color: var(--success-color);
+        }
+        
+        .error {
+            background-color: rgba(231, 76, 60, 0.1);
+            border-color: var(--danger-color);
+            color: var(--danger-color);
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 20px;
+            }
+            
+            .action-bar {
+                flex-direction: column;
+                padding: 10px;
+            }
+            
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-content">
+        <div class="dashboard-header">
+            <h1 class="dashboard-title">Rejected Requests</h1>
+        </div>
+        
+        <div id="message" class="hidden message"></div>
+        
+        <div class="settings-section">
+            <h2><i class="fas fa-times-circle"></i> Rejected Requests List</h2>
+            
+            <div class="search-container">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" placeholder="Search by ID, name, or other details...">
+            </div>
+            
+            <div id="requests-container">
+                <div class="loading">
+                    <i class="fas fa-spinner fa-spin"></i> Loading requests...
+                </div>
+            </div>
+            
+            <table id="requests-table" class="hidden">
+                <thead>
+                    <tr>
+                        <th>Request ID</th>
+                        <th>ID No.</th>
+                        <th>Name</th>
+                        <th>Level</th>
+                        <th>Schedule Time</th>
+                        <th>Method</th>
+                        <th>Payment</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="requests-tbody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="action-bar" class="action-bar">
+        <button id="recall-btn" class="btn btn-primary">
+            <i class="fas fa-redo"></i> Recall to Pending
+        </button>
+        <button id="delete-btn" class="btn btn-danger">
+            <i class="fas fa-trash"></i> Delete
+        </button>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Apply saved theme
+            applyTheme();
+            
+            // Don't fetch immediately, wait until we confirm token exists
+            setupActionButtons();
+            
+            // Check if we have a token before making API calls
+            if (localStorage.getItem('userToken')) {
+                fetchRejectedRequests();
+                // Set up the refresh interval only if we have a token
+                setInterval(fetchRejectedRequests, 3000); // Refresh data every 3 seconds
+            } else {
+                const container = document.getElementById('requests-container');
+                container.innerHTML = `<div class="empty"><i class="fas fa-exclamation-circle"></i> Authentication required. Please log in.</div>`;
+            }
+            
+            // Set up search functionality
+            document.getElementById('searchInput').addEventListener('input', filterRequests);
+        });
+
+        // Apply theme from localStorage
+        function applyTheme() {
+            const savedTheme = localStorage.getItem('adminTheme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        }
+
+        const baseUrl = "https://jimboyaczon.pythonanywhere.com";
+        let selectedUserIds = [];
+        const tbody = document.getElementById('requests-tbody');
+        // Store all requests for filtering
+        let allRequests = [];
+
+        function fetchRejectedRequests() {
+            const token = localStorage.getItem('userToken');
+
+            if (!token) {
+                const container = document.getElementById('requests-container');
+                container.innerHTML = `<div class="empty"><i class="fas fa-exclamation-circle"></i> Authentication required. Please log in.</div>`;
+                return;
+            }
+
+            fetch(`${baseUrl}/api/rejected_requests`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+                .then(response => {
+                    if (response.status === 401) {
+                        throw new Error('Your session has expired. Please log in again.');
+                    }
+                    if (!response.ok) {
+                        throw new Error(`Server responded with ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    allRequests = data; // Store all requests
+                    filterRequests(); // Apply any filters and render
+                })
+                .catch(error => {
+                    console.error('Error fetching rejected requests:', error);
+                    const container = document.getElementById('requests-container');
+                    container.innerHTML = `<div class="empty"><i class="fas fa-exclamation-triangle"></i> ${error.message}</div>`;
+                    showMessage(`<i class="fas fa-exclamation-circle"></i> ${error.message}`, 'error');
+                });
+        }
+        
+        function filterRequests() {
+            const searchQuery = document.getElementById('searchInput').value.toLowerCase();
+            let filteredRequests = allRequests;
+            
+            // Apply search filter if there's a query
+            if (searchQuery) {
+                filteredRequests = allRequests.filter(user => {
+                    return (
+                        (user.request_id && user.request_id.toLowerCase().includes(searchQuery)) ||
+                        (user.idno && user.idno.toLowerCase().includes(searchQuery)) ||
+                        (user.name && user.name.toLowerCase().includes(searchQuery)) ||
+                        (user.level && user.level.toLowerCase().includes(searchQuery)) ||
+                        (user.method && user.method.toLowerCase().includes(searchQuery)) ||
+                        (user.payment && user.payment.toLowerCase().includes(searchQuery)) ||
+                        (user.status && user.status.toLowerCase().includes(searchQuery))
+                    );
+                });
+            }
+            
+            renderRequests(filteredRequests);
+        }
+
+        function renderRequests(requests) {
+            const container = document.getElementById('requests-container');
+            const table = document.getElementById('requests-table');
+            
+            // Get admin filter settings from localStorage
+            let filterSettings = {
+                express: true,
+                regular: true,
+                priority: true
+            };
+            
+            try {
+                const savedFilters = JSON.parse(localStorage.getItem('adminFilterSettings'));
+                if (savedFilters) {
+                    filterSettings = savedFilters;
+                }
+            } catch (e) {
+                console.error('Error loading filter settings:', e);
+            }
+            
+            // Filter requests based on admin preferences
+            const filteredRequests = requests.filter(user => {
+                // If payment type is not specified, always show it
+                if (!user.payment) return true;
+                
+                // Otherwise, check if the payment type is enabled in filter settings
+                return (
+                    (user.payment === 'express' && filterSettings.express) ||
+                    (user.payment === 'regular' && filterSettings.regular) ||
+                    (user.payment === 'priority' && filterSettings.priority)
+                );
+            });
+            
+            tbody.innerHTML = ''; // Clear only the table body, not the whole container
+
+            if (filteredRequests.length === 0) {
+                container.innerHTML = `<div class="empty"><i class="fas fa-info-circle"></i> No matching rejected requests found.</div>`;
+                table.classList.add('hidden');
+                // If the list is empty, clear selection and hide the action bar
+                selectedUserIds = [];
+                toggleActionBar();
+                return;
+            }
+
+            // If we previously had an empty message, clear it and show the table
+            container.innerHTML = '';
+            table.classList.remove('hidden');
+
+            // Build the table rows as a string for efficiency
+            let tableContent = '';
+            filteredRequests.forEach(user => {
+                // Use the new field name 'schedule' instead of 'queue_datetime'
+                const scheduleDate = user.schedule ? new Date(user.schedule) : new Date();
+                const scheduleTime = scheduleDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                
+                // Check if the current user is in our list of selected IDs
+                const isSelected = selectedUserIds.includes(user.id);
+                const selectedClass = isSelected ? 'selected' : '';
+
+                tableContent += `
+                    <tr class="selectable ${selectedClass}" data-user-id="${user.id}">
+                        <td>${user.request_id || ''}</td>
+                        <td>${user.idno || ''}</td>
+                        <td>${user.name || ''}</td>
+                        <td>${user.level || ''}</td>
+                        <td>${scheduleTime}</td>
+                        <td>${user.method || ''}</td>
+                        <td>${user.payment || ''}</td>
+                        <td>${user.status || ''}</td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = tableContent;
+
+            // Verify that all selected users still exist in the new list.
+            const currentIds = new Set(filteredRequests.map(u => u.id));
+            selectedUserIds = selectedUserIds.filter(id => currentIds.has(id));
+            toggleActionBar();
+
+            // Add single click listener to the table body for efficiency
+            if (!tbody.hasAttribute('data-click-listener')) {
+                 tbody.addEventListener('click', handleRowClick);
+                 tbody.setAttribute('data-click-listener', 'true');
+            }
+        }
+
+        function handleRowClick(event) {
+            const row = event.target.closest('tr.selectable');
+            if (!row) return;
+
+            const userId = row.dataset.userId;
+            
+            // Toggle selection
+            if (selectedUserIds.includes(userId)) {
+                // Deselect
+                selectedUserIds = selectedUserIds.filter(id => id !== userId);
+                row.classList.remove('selected');
+            } else {
+                // Select
+                selectedUserIds.push(userId);
+                row.classList.add('selected');
+            }
+
+            toggleActionBar();
+        }
+
+        function toggleActionBar() {
+            const actionBar = document.getElementById('action-bar');
+            if (selectedUserIds.length > 0) {
+                actionBar.classList.add('visible');
+            } else {
+                actionBar.classList.remove('visible');
+            }
+        }
+        
+        function setupActionButtons() {
+            document.getElementById('recall-btn').addEventListener('click', () => recallToQueue());
+            document.getElementById('delete-btn').addEventListener('click', () => {
+                if (confirm('Are you sure you want to delete these requests? This cannot be undone.')) {
+                    deleteRequests();
+                }
+            });
+        }
+
+        function recallToQueue() {
+            if (selectedUserIds.length === 0) {
+                showMessage("<i class=\"fas fa-exclamation-triangle\"></i> Please select at least one request.", "error");
+                return;
+            }
+
+            const token = localStorage.getItem('userToken');
+            if (!token) {
+                showMessage("<i class=\"fas fa-exclamation-circle\"></i> Authentication error. Please log in again.", "error");
+                return;
+            }
+            
+            // Format date in MySQL compatible format (YYYY-MM-DD HH:MM:SS)
+            const now = new Date();
+            const formattedDate = now.getFullYear() + '-' + 
+                String(now.getMonth() + 1).padStart(2, '0') + '-' + 
+                String(now.getDate()).padStart(2, '0') + ' ' + 
+                String(now.getHours()).padStart(2, '0') + ':' + 
+                String(now.getMinutes()).padStart(2, '0') + ':' + 
+                String(now.getSeconds()).padStart(2, '0');
+
+            fetch(`${baseUrl}/api/update_status`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    user_ids: selectedUserIds,
+                    status: 'pending',
+                    schedule: formattedDate  // Use formatted date instead of ISO string
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.message) {
+                    showMessage(`<i class="fas fa-check-circle"></i> ${data.message}`, "success");
+                    // Manually remove rows to give immediate feedback before the next refresh
+                    selectedUserIds.forEach(id => {
+                        const row = document.querySelector(`tr[data-user-id='${id}']`);
+                        if (row) row.remove();
+                    });
+                    
+                    // Reset selection and refresh the list
+                    selectedUserIds = [];
+                    toggleActionBar();
+                    fetchRejectedRequests();
+                } else {
+                    throw new Error(data.error || "Failed to update requests.");
+                }
+            })
+            .catch(error => {
+                console.error("Error recalling requests:", error);
+                showMessage(`<i class="fas fa-exclamation-circle"></i> An error occurred: ${error.message}`, "error");
+            });
+        }
+
+        function deleteRequests() {
+            if (selectedUserIds.length === 0) {
+                showMessage("<i class=\"fas fa-exclamation-triangle\"></i> Please select at least one request.", "error");
+                return;
+            }
+
+            const token = localStorage.getItem('userToken');
+            if (!token) {
+                showMessage("<i class=\"fas fa-exclamation-circle\"></i> Authentication error. Please log in again.", "error");
+                return;
+            }
+
+            fetch(`${baseUrl}/api/update_status`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    user_ids: selectedUserIds,
+                    status: null  // Set status to null to delete/clear the status
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.message) {
+                    showMessage(`<i class="fas fa-check-circle"></i> ${data.message}`, "success");
+                    // Manually remove rows to give immediate feedback before the next refresh
+                    selectedUserIds.forEach(id => {
+                        const row = document.querySelector(`tr[data-user-id='${id}']`);
+                        if (row) row.remove();
+                    });
+                    
+                    // Reset selection and refresh the list
+                    selectedUserIds = [];
+                    toggleActionBar();
+                    fetchRejectedRequests();
+                } else {
+                    throw new Error(data.error || "Failed to delete requests.");
+                }
+            })
+            .catch(error => {
+                console.error("Error deleting requests:", error);
+                showMessage(`<i class="fas fa-exclamation-circle"></i> An error occurred: ${error.message}`, "error");
+            });
+        }
+
+        // Function to show message
+        function showMessage(text, type) {
+            const messageBox = document.getElementById('message');
+            messageBox.innerHTML = text;
+            messageBox.className = `message ${type}`;
+            messageBox.classList.remove('hidden');
+            
+            // Auto-hide success messages after 3 seconds
+            if (type === 'success') {
+                setTimeout(() => {
+                    messageBox.classList.add('hidden');
+                }, 3000);
+            }
+        }
+    </script>
+</body>
+</html>
